@@ -283,26 +283,6 @@ class Prediction:
             dummy_area = 0.5
             x_ = (mu[0]+mu[1])/2.0
             count = np.argmin(np.abs(x-x_))
-        #     if mu[0]!= mu[1]:
-        #         if area<=0.25:
-        #             dummy_area =0.25
-        #             x_ = mu[0]
-        #         elif area>0.25 and area<=0.5:
-        #             dummy_area =0.5
-        #             x_ = (mu[0]+mu[1])/2.0
-        #         elif area>0.5 and area<=0.75:
-        #             dummy_area =0.75
-        #             x_ = mu[1]
-        #         elif area>0.75 and area<=1:
-        #             dummy_area =1
-        #             x_ = stop
-        #     else:
-        #         if area<=0.5:
-        #             dummy_area =0.5
-        #             x_ = mu[0]
-        #         else:
-        #             dummy_area =1
-        #             x_ = stop
         else:
             dummy_area =0.5
             x_ = mu[0]
@@ -374,7 +354,7 @@ class Prediction:
     @staticmethod
     def Hrcc_predict(delta_mu,x_var_,x,y,z,sigma_x_1,sigma_x_2,line_labels,distribution_fn,ICPDF_fn,hrcc_area,extractor,optimizer,nop):
         x_1 = []
-        step = 0.0001
+        step = 0.01
         for i in x:
             if x_var_ == '$\mu_{x_1}$':
                 mu = List([i,i+delta_mu])
@@ -387,9 +367,10 @@ class Prediction:
             dis_x = np.arange(start,stop,step)
             pdf =  distribution_fn(dis_x,mu,sigma)
             pdf = np.multiply(pdf,1/(np.sum(pdf)*step))
+            print(np.sum(pdf)*step)
             _1 = ICPDF_fn(hrcc_area,mu,stop,step,dis_x,pdf)
             x_1.append(_1)
-            print(np.round(len(x_1)/len(x),decimals=2),end="\r")
+            # print(np.round(len(x_1)/len(x),decimals=2),end="\r")
 
         z_extracted = extractor(x,y,x_1,z)
         hrcc = optimizer(x,x_1,z_extracted)
@@ -727,7 +708,7 @@ if distributions == 1:
 
 #########################################################
 
-distributions1 = 1
+distributions1 = 0
 if distributions1 == 1:
     step = 0.0001
     var_mu = [10]
