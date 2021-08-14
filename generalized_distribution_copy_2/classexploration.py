@@ -354,7 +354,7 @@ class Prediction:
     @staticmethod
     def Hrcc_predict(delta_mu,x_var_,x,y,z,sigma_x_1,sigma_x_2,line_labels,distribution_fn,ICPDF_fn,hrcc_area,extractor,optimizer,nop):
         x_1 = []
-        step = 0.01
+        step = 0.0001
         for i in x:
             if x_var_ == '$\mu_{x_1}$':
                 mu = List([i,i+delta_mu])
@@ -367,10 +367,9 @@ class Prediction:
             dis_x = np.arange(start,stop,step)
             pdf =  distribution_fn(dis_x,mu,sigma)
             pdf = np.multiply(pdf,1/(np.sum(pdf)*step))
-            print(np.sum(pdf)*step)
             _1 = ICPDF_fn(hrcc_area,mu,stop,step,dis_x,pdf)
             x_1.append(_1)
-            # print(np.round(len(x_1)/len(x),decimals=2),end="\r")
+            print(np.round(len(x_1)/len(x),decimals=2),end="\r")
 
         z_extracted = extractor(x,y,x_1,z)
         hrcc = optimizer(x,x_1,z_extracted)
@@ -432,7 +431,7 @@ class Visualization:
         if plot_type == 'graphics':
             self.graphicPlot(a= y,b=x,x_name=r'%s'%x_var_,y_name=r'%s'%y_var_,z_name=z_var_,title="Number_of_options = "+str(num_of_opts),save_name=path+save_plot+x_var_[2:-1]+y_var_[2:-1]+'RCD.pdf',cbar_loc=cbar_orien,z_var=z,z_max_fit = HRCC[0],z_max_fit_lab=HRCC[1],line_labels=line_labels)
             if gaussian ==1:
-                self.linePlot(HRCC[2],HRCC[3],x_name='Number of iterations',y_name='Average HRCC',z_name=[str(HRCC[1])],title='Maximizing HRCC for best fit',save_name=path+save_plot+'HRCC.pdf')
+                # self.linePlot(HRCC[2],HRCC[3],x_name='Number of iterations',y_name='Average HRCC',z_name=[str(HRCC[1])],title='Maximizing HRCC for best fit',save_name=path+save_plot+'HRCC.pdf')
                 # Mean of ESM and ES2M
                 predicted_hrcc = prd.Hrcc_predict(delta_mu,x_var_,x,y,z,sigma_x_1,sigma_x_2,line_labels,prd.gaussian,prd.ICPDF,1.0-(1.0/(line_labels)),prd.z_extractor,prd.optimization,line_labels)
                 d = np.round(abs(predicted_hrcc[0][1]-HRCC[0][1])/ np.sqrt(HRCC[0][0]**2 +1),decimals=2)
@@ -454,7 +453,7 @@ class Visualization:
                 # self.graphicPlot(a= y,b=x,x_name=r'%s'%x_var_,y_name=r'%s'%y_var_,z_name=z_var_,title="Number_of_options = "+str(num_of_opts),save_name=path+save_plot+x_var_[2:-1]+y_var_[2:-1]+'RCD_ES2M.pdf',cbar_loc=cbar_orien,z_var=z,z_max_fit = HRCC[0],z_max_fit_lab=HRCC[1],options_line=[predicted_hrcc[0]],line_labels=[line_labels,predicted_hrcc[1]],d=d,delta_slope=delta_slope)
 
             if uniform ==1:
-                self.linePlot(HRCC[2],HRCC[3],x_name='Number of iterations',y_name='Average HRCC',z_name=[str(HRCC[1])],title='Maximizing HRCC for best fit',save_name=path+save_plot+'HRCC.pdf')
+                # self.linePlot(HRCC[2],HRCC[3],x_name='Number of iterations',y_name='Average HRCC',z_name=[str(HRCC[1])],title='Maximizing HRCC for best fit',save_name=path+save_plot+'HRCC.pdf')
                 # mean ESM and ES2M
                 predicted_hrcc = prd.Hrcc_predict(delta_mu,x_var_,x,y,z,sigma_x_1,sigma_x_2,line_labels,prd.uniform,prd.ICPDF,1.0-(1.0/(line_labels)),prd.z_extractor,prd.optimization,line_labels)
                 d = np.round(abs(predicted_hrcc[0][1]-HRCC[0][1])/ np.sqrt(HRCC[0][0]**2 +1),decimals=2)

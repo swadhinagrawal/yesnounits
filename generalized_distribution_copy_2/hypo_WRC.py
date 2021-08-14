@@ -407,11 +407,11 @@ if uniform_x_uniform_h==1:
     delta_mu = 0
     mu_x = [np.round(i*0.1,decimals=1) for i in range(151)]
     mu_h = [np.round(i*0.1,decimals=1) for i in range(151)]
-    cnt = 27
+    cnt = 48
     for nop in number_of_opts:
         number_of_options = nop
-        save_string = 'uxuh_mu_h_vs_mu_x_vs_RCD_nop' + str(nop) #str(cnt)+
-        save_string = save_data(save_string,continuation)
+        save_string = str(cnt)+'uxuh_mu_h_vs_mu_x_vs_RCD_nop' + str(nop) #str(cnt)+
+        # save_string = save_data(save_string,continuation)
 
         def mux1muh1(muh,mux):
             mux1 = mux + low_x_1
@@ -428,9 +428,9 @@ if uniform_x_uniform_h==1:
             mu_va = {'$\mu_{h_1}$':muh,'$\mu_{h_2}$':muh,'$\mu_{x_1}$': mux,'$\mu_{x_2}$': mux,"success_rate":count/runs}
             return mu_va
 
-        parallel(mux1muh1,mu_h,mu_x,columns_name=['$\mu_{h_1}$','$\mu_{h_2}$','$\mu_{x_1}$','$\mu_{x_2}$',"success_rate"],save_string=save_string,batch_size=3*len(mu_h))
+        # parallel(mux1muh1,mu_h,mu_x,columns_name=['$\mu_{h_1}$','$\mu_{h_2}$','$\mu_{x_1}$','$\mu_{x_2}$',"success_rate"],save_string=save_string,batch_size=3*len(mu_h))
 
-        # vis.data_visualize(file_name=save_string+".csv",save_plot=save_string,x_var_='$\mu_{x_1}$',y_var_='$\mu_{h_1}$',cbar_orien="vertical",num_of_opts=nop,line_labels=number_of_options,z_var_='success_rate',plot_type='graphics',sigma_x_1=sigma_x_1,delta_mu=delta_mu,sigma_x_2=sigma_x_2,gaussian=0,uniform=1)
+        vis.data_visualize(file_name=save_string+".csv",save_plot=save_string,x_var_='$\mu_{x_1}$',y_var_='$\mu_{h_1}$',cbar_orien="vertical",num_of_opts=nop,line_labels=number_of_options,z_var_='success_rate',plot_type='graphics',sigma_x_1=sigma_x_1,delta_mu=delta_mu,sigma_x_2=sigma_x_2,gaussian=0,uniform=1)
 
         message = str(nop)+' number of options simulation finished'
         pushbullet_message('Python Code','Results out! '+message)
