@@ -1,4 +1,0 @@
-hasegawa
-poisson
-src
-uniform

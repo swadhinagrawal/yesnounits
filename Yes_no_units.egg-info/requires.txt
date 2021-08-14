@@ -1,2 +1,0 @@
-numpy==1.15
-matplotlib>=3.0statsmodels==0.9.0
