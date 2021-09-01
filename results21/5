@@ -1,0 +1,9 @@
+mu_m_1 : 100
+mu_m_2 : 100
+mu_x_1 : 15
+mu_x_2 : 15
+sigma_m_1 : 0
+sigma_m_2 : 0
+nop : 2
+mu_h_1 : 5
+mu_h_2 : 5
