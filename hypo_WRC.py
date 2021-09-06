@@ -22,17 +22,18 @@ pval_WRC_normal = 0
 pval_WRC_bimodal_x_gaussian_h = 0
 pval_WRC_uniform_x_gaussian_h = 0
 bimodal_x_normal_h = 0
-bimodal_x_normal_h_sigma = 0
+bimodal_x_normal_h_sigma = 1
 uniform_x_uniform_h = 0
 uniform_x_uniform_h_sigma = 0
 uniform_x_normal_h = 0
-uniform_x_normal_h_sigma = 0
+uniform_x_normal_h_sigma = 1
 normal_x_normal_h = 0
 normal_x_normal_h_1 = 0
 normal_x_normal_h_sigma = 1
 
 wf = yn.workFlow()
 vis = yn.Visualization()
+fig, ax = plt.subplots()
 
 def parallel(func,a,b,batch_size,save_string,columns_name,continuation = False,do=False,mu_x=None,n=None):
     step = 0.0001
@@ -105,7 +106,6 @@ def parallel(func,a,b,batch_size,save_string,columns_name,continuation = False,d
         progress +=1
         print("\r Percent of input processed : {}%".format(np.round(100*progress*batch_size/len(inp)),decimals=1), end="")
 
-
 def save_data(save_string,continuation):
     check = np.sort(np.array([int(f) for f in os.listdir(path) if '.' not in f]))
     count = 0
@@ -131,6 +131,17 @@ def pushbullet_message(title, body):
     #     raise Exception('Error',resp.status_code)
     # else:
     #     print ('Message sent')
+
+def plot_slopes(mum_slopes,mum,num_opts,ax,style):
+    color = ['red','green','blue','purple','violet','brown','black','orange']
+    for i in range(len(num_opts)):
+        x = []
+        y = []
+        for j in range(len(mum)):
+            x.append(mum[j])
+            y.append(mum_slopes[j][i])
+        ax.plot(x,y,linewidth=num_opts[i],color = color[i],linestyles=style)
+        
 
 if WRC_normal==1:
     mu_m = [i for i in range(500,1000)]
@@ -398,83 +409,90 @@ if bimodal_x_normal_h==1:
 
 if bimodal_x_normal_h_sigma==1:
     continuation = False
-    number_of_opts = [2,5,10]
-    mu_m_1 = 10
-    sigma_m_1 = 0
-    mu_m_2 = 10
-    sigma_m_2 = 0
+    mum = [10,50,100,200,500]
+    file_num = 0
+    mum_slopes = []
+    number_of_opts = [2,5,10,20,100]
+    for i in mum:
+        mu_m_1 = i
+        sigma_m_1 = 0
+        mu_m_2 = i
+        sigma_m_2 = 0
 
-    runs = 500
-    batch_size = 10
-    delta_sigma = 0
-    delta_mu = 5
-    mu_x_1 = 5
-    mu_x_2 = 5 + delta_mu
-    mu_h_1 = (mu_x_1+mu_x_2)/2
-    mu_h_2 = mu_h_1
-    mu_x = List([mu_x_1,mu_x_2])
-    sigma_x = [np.round(0.1+i*0.1,decimals=1) for i in range(151)]
-    sigma_h = [np.round(0.1+i*0.1,decimals=1) for i in range(151)]
-    file_num = 9
-    step = 0.0001
-    
-    for nop in number_of_opts:
-        number_of_options = nop
-        save_string = str(file_num)+'bxgh_mx_mh_sigma_h_vs_sigma_x1_sigma_x2_vs_RCD_nop_'+str(nop) # str(file_num)+
-        # save_string,param = save_data(save_string,continuation)
-
-        # if isinstance(param,type(None))==False:
-        #     param.write("mu_m_1 : "+str(mu_m_1)+"\n")
-        #     param.write("mu_m_2 : "+str(mu_m_2)+"\n")
-        #     param.write("mu_x_1 : "+str(mu_x_1)+"\n")
-        #     param.write("mu_x_2 : "+str(mu_x_2)+"\n")
-        #     param.write("sigma_m_1 : "+str(sigma_m_1)+"\n")
-        #     param.write("sigma_m_2 : "+str(sigma_m_2)+"\n")
-        #     param.write("nop : "+str(number_of_options)+"\n")
-        #     param.write("mu_h_1 : "+str(mu_h_1)+"\n")
-        #     param.write("mu_h_2 : "+str(mu_h_2)+"\n")
-
+        runs = 500
+        batch_size = 10
+        delta_sigma = 0
+        delta_mu = 5
+        mu_x_1 = 5
+        mu_x_2 = 5 + delta_mu
+        mu_h_1 = (mu_x_1+mu_x_2)/2
+        mu_h_2 = mu_h_1
+        mu_x = List([mu_x_1,mu_x_2])
+        sigma_x = [np.round(0.1+i*0.1,decimals=1) for i in range(151)]
+        sigma_h = [np.round(0.1+i*0.1,decimals=1) for i in range(151)]
         
-        def sigx1sigh1(sigma_h,sigma_x):
-            sigma_x_1 = delta_sigma + sigma_x
-            sigma_x_2 = delta_sigma + sigma_x
-            sigma_h_1 = sigma_h
-            sigma_h_2 = sigma_h
+        step = 0.0001
+        num_slopes = []
+        for nop in number_of_opts:
+            number_of_options = nop
+            save_string = str(file_num)+'bxgh_mx_mh_sigma_h_vs_sigma_x1_sigma_x2_vs_RCD_nop_'+str(nop) # str(file_num)+
+            # save_string,param = save_data(save_string,continuation)
+
+            # if isinstance(param,type(None))==False:
+            #     param.write("mu_m_1 : "+str(mu_m_1)+"\n")
+            #     param.write("mu_m_2 : "+str(mu_m_2)+"\n")
+            #     param.write("mu_x_1 : "+str(mu_x_1)+"\n")
+            #     param.write("mu_x_2 : "+str(mu_x_2)+"\n")
+            #     param.write("sigma_m_1 : "+str(sigma_m_1)+"\n")
+            #     param.write("sigma_m_2 : "+str(sigma_m_2)+"\n")
+            #     param.write("nop : "+str(number_of_options)+"\n")
+            #     param.write("mu_h_1 : "+str(mu_h_1)+"\n")
+            #     param.write("mu_h_2 : "+str(mu_h_2)+"\n")
+
             
-            count = 0
-            for k in range(runs):
-                success,incrt,incrt_w_n,yes_test,max_rat_pval,pval_mat = wf.multi_run(distribution_m=rng.units_n,distribution_x=rng.dx_n,distribution_h=rng.threshold_n,\
-                    mu_h=[mu_h_1,mu_h_2],sigma_h=[sigma_h_1,sigma_h_2],mu_x=[mu_x_1,mu_x_2],sigma_x=[sigma_x_1,sigma_x_2],err_type=0,number_of_options=number_of_options,\
-                    mu_m=[mu_m_1,mu_m_2],sigma_m=[sigma_m_1,sigma_m_2])
-                if success == 1:
-                    count += 1
-            mu_va = {'$\sigma_{h_1}$':sigma_h_1,'$\sigma_{h_2}$':sigma_h_2,'$\sigma_{x_1}$': sigma_x_1,'$\sigma_{x_2}$': sigma_x_2,"success_rate":count/runs}
-            return mu_va
+            def sigx1sigh1(sigma_h,sigma_x):
+                sigma_x_1 = delta_sigma + sigma_x
+                sigma_x_2 = delta_sigma + sigma_x
+                sigma_h_1 = sigma_h
+                sigma_h_2 = sigma_h
+                
+                count = 0
+                for k in range(runs):
+                    success,incrt,incrt_w_n,yes_test,max_rat_pval,pval_mat = wf.multi_run(distribution_m=rng.units_n,distribution_x=rng.dx_n,distribution_h=rng.threshold_n,\
+                        mu_h=[mu_h_1,mu_h_2],sigma_h=[sigma_h_1,sigma_h_2],mu_x=[mu_x_1,mu_x_2],sigma_x=[sigma_x_1,sigma_x_2],err_type=0,number_of_options=number_of_options,\
+                        mu_m=[mu_m_1,mu_m_2],sigma_m=[sigma_m_1,sigma_m_2])
+                    if success == 1:
+                        count += 1
+                mu_va = {'$\sigma_{h_1}$':sigma_h_1,'$\sigma_{h_2}$':sigma_h_2,'$\sigma_{x_1}$': sigma_x_1,'$\sigma_{x_2}$': sigma_x_2,"success_rate":count/runs}
+                return mu_va
 
-        # parallel(sigx1sigh1,sigma_h,sigma_x,columns_name=['$\sigma_{h_1}$','$\sigma_{h_2}$','$\sigma_{x_1}$','$\sigma_{x_2}$',"success_rate"],save_string=save_string,batch_size=3*len(sigma_h),continuation=continuation)#,do=True,mu_x=mu_x,n=number_of_options)
-        # step = 0.0001
-        # prd = yn.Prediction()
-        # min_sig_h=[]
-        # for i in sigma_x:
-        #     sigma_x_1 = delta_sigma + i
-        #     sigma_x_2 = delta_sigma + i
-        #     sigma_x1 = List([sigma_x_1,sigma_x_2])
-        #     start1 = np.sum(mu_x)/2 - sigma_x_1-sigma_x_2-45
-        #     stop1 = np.sum(mu_x)/2 +sigma_x_1+sigma_x_1+45
-            
-        #     dis_x = np.round_(np.arange(start1,stop1,step),decimals=4)
-        #     pdf =  prd.gaussian(dis_x,mu_x,sigma_x1)
-        #     area = (np.sum(pdf)*step)
-        #     pdf_x = np.multiply(pdf,1/area)
-        #     mean_esmes2m = prd.ICPDF(1-(1/number_of_options),mu_x,stop1,step,dis_x,pdf_x)
-        #     es2m = prd.ICPDF(1-(5/(3*number_of_options)),mu_x,stop1,step,dis_x,pdf_x)
-        #     min_sig_h.append(mean_esmes2m-es2m)
+            # parallel(sigx1sigh1,sigma_h,sigma_x,columns_name=['$\sigma_{h_1}$','$\sigma_{h_2}$','$\sigma_{x_1}$','$\sigma_{x_2}$',"success_rate"],save_string=save_string,batch_size=3*len(sigma_h),continuation=continuation)#,do=True,mu_x=mu_x,n=number_of_options)
+            # step = 0.0001
+            # prd = yn.Prediction()
+            # min_sig_h=[]
+            # for i in sigma_x:
+            #     sigma_x_1 = delta_sigma + i
+            #     sigma_x_2 = delta_sigma + i
+            #     sigma_x1 = List([sigma_x_1,sigma_x_2])
+            #     start1 = np.sum(mu_x)/2 - sigma_x_1-sigma_x_2-45
+            #     stop1 = np.sum(mu_x)/2 +sigma_x_1+sigma_x_1+45
+                
+            #     dis_x = np.round_(np.arange(start1,stop1,step),decimals=4)
+            #     pdf =  prd.gaussian(dis_x,mu_x,sigma_x1)
+            #     area = (np.sum(pdf)*step)
+            #     pdf_x = np.multiply(pdf,1/area)
+            #     mean_esmes2m = prd.ICPDF(1-(1/number_of_options),mu_x,stop1,step,dis_x,pdf_x)
+            #     es2m = prd.ICPDF(1-(5/(3*number_of_options)),mu_x,stop1,step,dis_x,pdf_x)
+            #     min_sig_h.append(mean_esmes2m-es2m)
 
-        vis.data_visualize(file_name=save_string+".csv",save_plot=save_string,x_var_='$\sigma_{x_1}$',y_var_='$\sigma_{h_1}$',cbar_orien="vertical",num_of_opts=nop,line_labels=number_of_options,z_var_='success_rate',plot_type='graphics',gaussian=0,uniform=0)#,min_sig_h=min_sig_h
+            [slope,intercept,hars] = vis.data_visualize(file_name=save_string+".csv",save_plot=save_string,x_var_='$\sigma_{x_1}$',y_var_='$\sigma_{h_1}$',cbar_orien="vertical",num_of_opts=nop,line_labels=number_of_options,z_var_='success_rate',plot_type='graphics',gaussian=0,uniform=0)#,min_sig_h=min_sig_h
+            num_slopes.append([slope,hars])
 
-        message = str(nop)+' number of options simulation finished'
-        pushbullet_message('Python Code','Results out! '+message)
-        file_num += 1
+            message = str(nop)+' number of options simulation finished'
+            pushbullet_message('Python Code','Results out! '+message)
+            file_num += 1
+        mum_slopes.append(num_slopes)
+    plot_slopes(mum_slopes,mum,number_of_opts,ax,style='--')
 
 if uniform_x_uniform_h==1:
     continuation = False
@@ -633,74 +651,80 @@ if uniform_x_normal_h==1:
 
 if uniform_x_normal_h_sigma==1:
     continuation = False
-    number_of_opts = [10]
-    mu_m_1=10
-    sigma_m_1=0
-    mu_m_2=10
-    sigma_m_2=0
-    
-    mu_x_1 = 7.5
-    mu_x_2 = 7.5
-    # mu_h_1 = mu_x_1
-    # mu_h_2 = mu_x_1
-    mu_x = List([mu_x_1,mu_x_2])
-    runs = 500
-    batch_size = 50
-    delta_sigma = 0
-    sigma_x = [np.round(0.1+i*0.1,decimals=1) for i in range(151)]
-    sigma_h = [np.round(0.1+i*0.1,decimals=1) for i in range(151)]
-    cnt = 35
-    for nop in number_of_opts:
-        number_of_options = nop
-        save_string = str(cnt)+'uxgh_sigma_h_vs_sigma_x_vs_RCD_nop'+str(nop) # str(cnt)+
-        # save_string,param = save_data(save_string,continuation)
-        # if isinstance(param,type(None))==False:
-        #     param.write("mu_m_1 : "+str(mu_m_1)+"\n")
-        #     param.write("mu_m_2 : "+str(mu_m_2)+"\n")
-        #     param.write("mu_x_1 : "+str(mu_x_1)+"\n")
-        #     param.write("mu_x_2 : "+str(mu_x_2)+"\n")
-        #     param.write("sigma_m_1 : "+str(sigma_m_1)+"\n")
-        #     param.write("sigma_m_2 : "+str(sigma_m_2)+"\n")
-        #     param.write("nop : "+str(number_of_options)+"\n")
-            # param.write("mu_h_1 : "+str(mu_h_1)+"\n")
-            # param.write("mu_h_2 : "+str(mu_h_2)+"\n")
+    mum = [10,50,100,200,500]
+    cnt = 45
+    mum_slopes = []
+    for i in mum:
+        number_of_opts = [2,5,10,20]
+        mu_m_1=i
+        sigma_m_1=0
+        mu_m_2=i
+        sigma_m_2=0
+        
+        mu_x_1 = 7.5
+        mu_x_2 = 7.5
+        mu_h_1 = mu_x_1
+        mu_h_2 = mu_x_1
+        mu_x = List([mu_x_1,mu_x_2])
+        runs = 500
+        batch_size = 50
+        delta_sigma = 0
+        sigma_x = [np.round(0.1+i*0.1,decimals=1) for i in range(151)]
+        sigma_h = [np.round(0.1+i*0.1,decimals=1) for i in range(151)]
+        num_slopes = []
+        for nop in number_of_opts:
+            number_of_options = nop
+            save_string = str(cnt)+'uxgh_sigma_h_vs_sigma_x_vs_RCD_nop'+str(nop) # str(cnt)+
+            # save_string,param = save_data(save_string,continuation)
+            # if isinstance(param,type(None))==False:
+            #     param.write("mu_m_1 : "+str(mu_m_1)+"\n")
+            #     param.write("mu_m_2 : "+str(mu_m_2)+"\n")
+            #     param.write("mu_x_1 : "+str(mu_x_1)+"\n")
+            #     param.write("mu_x_2 : "+str(mu_x_2)+"\n")
+            #     param.write("sigma_m_1 : "+str(sigma_m_1)+"\n")
+            #     param.write("sigma_m_2 : "+str(sigma_m_2)+"\n")
+            #     param.write("nop : "+str(number_of_options)+"\n")
+                # param.write("mu_h_1 : "+str(mu_h_1)+"\n")
+                # param.write("mu_h_2 : "+str(mu_h_2)+"\n")
 
-        def sigmax1sigmah1(sigh,sigx,mu_h_1,mu_h_2):
-            mux1 = mu_x_1 - np.sqrt(3)*sigx
-            sigmax1 = mu_x_1 + np.sqrt(3)*sigx
-            count = 0
-            for k in range(runs):
-                success,incrt,incrt_w_n,yes_test,max_rat_pval,pval_mat = wf.multi_run(distribution_m=rng.units_n,distribution_x=rng.dx_u,distribution_h=rng.threshold_n,\
-                    mu_h=[mu_h_1,mu_h_2],sigma_h=[sigh,sigh],mu_x=[mux1,mux1],sigma_x=[sigmax1,sigmax1],err_type=0,number_of_options=number_of_options,\
-                    mu_m=[mu_m_1,mu_m_2],sigma_m=[sigma_m_1,sigma_m_2])
-                if success == 1:
-                    count += 1
-            mu_va = {'$\sigma_{h_1}$':sigh,'$\sigma_{h_2}$':sigh,'$\sigma_{x_1}$': sigx,'$\sigma_{x_2}$': sigx,"success_rate":count/runs}
-            return mu_va
+            def sigmax1sigmah1(sigh,sigx):
+                mux1 = mu_x_1 - np.sqrt(3)*sigx
+                sigmax1 = mu_x_1 + np.sqrt(3)*sigx
+                count = 0
+                for k in range(runs):
+                    success,incrt,incrt_w_n,yes_test,max_rat_pval,pval_mat = wf.multi_run(distribution_m=rng.units_n,distribution_x=rng.dx_u,distribution_h=rng.threshold_n,\
+                        mu_h=[mu_h_1,mu_h_2],sigma_h=[sigh,sigh],mu_x=[mux1,mux1],sigma_x=[sigmax1,sigmax1],err_type=0,number_of_options=number_of_options,\
+                        mu_m=[mu_m_1,mu_m_2],sigma_m=[sigma_m_1,sigma_m_2])
+                    if success == 1:
+                        count += 1
+                mu_va = {'$\sigma_{h_1}$':sigh,'$\sigma_{h_2}$':sigh,'$\sigma_{x_1}$': sigx,'$\sigma_{x_2}$': sigx,"success_rate":count/runs}
+                return mu_va
 
-        # parallel(sigmax1sigmah1,sigma_h,sigma_x,columns_name=['$\sigma_{h_1}$','$\sigma_{h_2}$','$\sigma_{x_1}$','$\sigma_{x_2}$',"success_rate"],save_string=save_string,batch_size=3*len(sigma_h),do=True,mu_x=mu_x,n=number_of_options)
-        # step = 0.0001
-        # prd = yn.Prediction()
-        # min_sig_h=[]
-        # for i in sigma_x:
-        #     sigma_x_1 = delta_sigma + i
-        #     sigma_x_2 = delta_sigma + i
-        #     sigma_x1 = List([sigma_x_1,sigma_x_2])
-        #     start1 = np.sum(mu_x)/2 - sigma_x_1-sigma_x_2-45
-        #     stop1 = np.sum(mu_x)/2 +sigma_x_1+sigma_x_1+45
-            
-        #     dis_x = np.round_(np.arange(start1,stop1,step),decimals=4)
-        #     pdf =  prd.uniform(dis_x,mu_x,sigma_x1)
-        #     area = (np.sum(pdf)*step)
-        #     pdf_x = np.multiply(pdf,1/area)
-        #     mean_esmes2m = prd.ICPDF(1-(1/number_of_options),mu_x,stop1,step,dis_x,pdf_x)
-        #     es2m = prd.ICPDF(1-(5/(3*number_of_options)),mu_x,stop1,step,dis_x,pdf_x)
-        #     min_sig_h.append(mean_esmes2m-es2m)
-        vis.data_visualize(file_name=save_string+".csv",save_plot=save_string,x_var_='$\sigma_{x_1}$',y_var_='$\sigma_{h_1}$',cbar_orien="vertical",num_of_opts=nop,line_labels=number_of_options,z_var_='success_rate',plot_type='graphics',delta_mu=delta_sigma,gaussian=0,uniform=0)#,min_sig_h=min_sig_h
-
-        message = str(nop)+' number of options simulation finished'
-        pushbullet_message('Python Code','Results out! '+message)
-        cnt += 1
+            # parallel(sigmax1sigmah1,sigma_h,sigma_x,columns_name=['$\sigma_{h_1}$','$\sigma_{h_2}$','$\sigma_{x_1}$','$\sigma_{x_2}$',"success_rate"],save_string=save_string,batch_size=3*len(sigma_h),do=True,mu_x=mu_x,n=number_of_options)
+            # step = 0.0001
+            # prd = yn.Prediction()
+            # min_sig_h=[]
+            # for i in sigma_x:
+            #     sigma_x_1 = delta_sigma + i
+            #     sigma_x_2 = delta_sigma + i
+            #     sigma_x1 = List([sigma_x_1,sigma_x_2])
+            #     start1 = np.sum(mu_x)/2 - sigma_x_1-sigma_x_2-45
+            #     stop1 = np.sum(mu_x)/2 +sigma_x_1+sigma_x_1+45
+                
+            #     dis_x = np.round_(np.arange(start1,stop1,step),decimals=4)
+            #     pdf =  prd.uniform(dis_x,mu_x,sigma_x1)
+            #     area = (np.sum(pdf)*step)
+            #     pdf_x = np.multiply(pdf,1/area)
+            #     mean_esmes2m = prd.ICPDF(1-(1/number_of_options),mu_x,stop1,step,dis_x,pdf_x)
+            #     es2m = prd.ICPDF(1-(5/(3*number_of_options)),mu_x,stop1,step,dis_x,pdf_x)
+            #     min_sig_h.append(mean_esmes2m-es2m)
+            [slope,intercept,hars] = vis.data_visualize(file_name=save_string+".csv",save_plot=save_string,x_var_='$\sigma_{x_1}$',y_var_='$\sigma_{h_1}$',cbar_orien="vertical",num_of_opts=nop,line_labels=number_of_options,z_var_='success_rate',plot_type='graphics',delta_mu=delta_sigma,gaussian=0,uniform=0)#,min_sig_h=min_sig_h
+            num_slopes.append([slope,hars])
+            message = str(nop)+' number of options simulation finished'
+            pushbullet_message('Python Code','Results out! '+message)
+            cnt += 1
+        mum_slopes.append(num_slopes)
+    plot_slopes(mum_slopes,mum,number_of_opts,ax,style='-.')
 
 if normal_x_normal_h==1:
     continuation = False
@@ -852,77 +876,82 @@ if normal_x_normal_h_1==1:
 
 if normal_x_normal_h_sigma==1:
     continuation = False
-    number_of_opts = [2,5,10]
-    mu_m_1=50
-    sigma_m_1=0
-    mu_m_2=50
-    sigma_m_2=0
-    
-    mu_x_1=7.5
-    mu_x_2=7.5
-    # mu_h_1 = mu_x_1
-    # mu_h_2= mu_x_1
-    mu_x = List([mu_x_1,mu_x_2])
-    runs = 500
-    batch_size = 50
-    delta_sigma = 0
-    sigma_x = [np.round(i*0.1,decimals=1) for i in range(151)]
-    sigma_h = [np.round(i*0.1,decimals=1) for i in range(151)]
-    file_num = 18
-    for nop in number_of_opts:
-        number_of_options = nop
-        save_string = str(file_num)+'gxgh_mx=mh_sigma_h_vs_sigma_x_vs_RCD_nop_'+str(nop) # str(file_num)+
-        save_string,param = save_data(save_string,continuation)
-        if isinstance(param,type(None))==False:
-            param.write("mu_m_1 : "+str(mu_m_1)+"\n")
-            param.write("mu_m_2 : "+str(mu_m_2)+"\n")
-            param.write("mu_x_1 : "+str(mu_x_1)+"\n")
-            param.write("mu_x_2 : "+str(mu_x_2)+"\n")
-            param.write("sigma_m_1 : "+str(sigma_m_1)+"\n")
-            param.write("sigma_m_2 : "+str(sigma_m_2)+"\n")
-            param.write("nop : "+str(number_of_options)+"\n")
-        #     param.write("mu_h_1 : "+str(mu_h_1)+"\n")
-        #     param.write("mu_h_2 : "+str(mu_h_2)+"\n")
+    mum = [10,50,100,200,500]
+    file_num = 25
+    mum_slopes = []
+    for i in mum:
+        number_of_opts = [2,5,10,20]
+        mu_m_1=i
+        sigma_m_1=0
+        mu_m_2=i
+        sigma_m_2=0
+        mu_x_1=7.5
+        mu_x_2=7.5
+        mu_h_1 = mu_x_1
+        mu_h_2= mu_x_1
+        mu_x = List([mu_x_1,mu_x_2])
+        runs = 500
+        batch_size = 50
+        delta_sigma = 0
+        sigma_x = [np.round(i*0.1,decimals=1) for i in range(151)]
+        sigma_h = [np.round(i*0.1,decimals=1) for i in range(151)]
+        num_slopes = []
+        for nop in number_of_opts:
+            number_of_options = nop
+            save_string = str(file_num)+'gxgh_mx=mh_sigma_h_vs_sigma_x_vs_RCD_nop_'+str(nop) # str(file_num)+
+            # save_string,param = save_data(save_string,continuation)
+            # if isinstance(param,type(None))==False:
+            #     param.write("mu_m_1 : "+str(mu_m_1)+"\n")
+            #     param.write("mu_m_2 : "+str(mu_m_2)+"\n")
+            #     param.write("mu_x_1 : "+str(mu_x_1)+"\n")
+            #     param.write("mu_x_2 : "+str(mu_x_2)+"\n")
+            #     param.write("sigma_m_1 : "+str(sigma_m_1)+"\n")
+            #     param.write("sigma_m_2 : "+str(sigma_m_2)+"\n")
+            #     param.write("nop : "+str(number_of_options)+"\n")
+            #     param.write("mu_h_1 : "+str(mu_h_1)+"\n")
+            #     param.write("mu_h_2 : "+str(mu_h_2)+"\n")
 
-        def sigx1sigh1(sigma_h,sigma_x,mu_h_1,mu_h_2):
-            sigma_x_1 = sigma_x
-            sigma_x_2 = delta_sigma + sigma_x
-            sigma_h_1 = sigma_h
-            sigma_h_2 = sigma_h
-            count = 0
-            for k in range(runs):
-                success,incrt,incrt_w_n,yes_test,max_rat_pval,pval_mat = wf.multi_run(distribution_m=rng.units_n,distribution_x=rng.dx_n,distribution_h=rng.threshold_n,\
-                    mu_h=[mu_h_1,mu_h_2],sigma_h=[sigma_h_1,sigma_h_2],mu_x=[mu_x_1,mu_x_2],sigma_x=[sigma_x_1,sigma_x_2],err_type=0,number_of_options=number_of_options,\
-                    mu_m=[mu_m_1,mu_m_2],sigma_m=[sigma_m_1,sigma_m_2])
-                if success == 1:
-                    count += 1
-            mu_va = {'$\sigma_{h_1}$':sigma_h_1,'$\sigma_{h_2}$':sigma_h_2,'$\sigma_{x_1}$': sigma_x_1,'$\sigma_{x_2}$': sigma_x_2,"success_rate":count/runs}
-            return mu_va
+            def sigx1sigh1(sigma_h,sigma_x):
+                sigma_x_1 = sigma_x
+                sigma_x_2 = delta_sigma + sigma_x
+                sigma_h_1 = sigma_h
+                sigma_h_2 = sigma_h
+                count = 0
+                for k in range(runs):
+                    success,incrt,incrt_w_n,yes_test,max_rat_pval,pval_mat = wf.multi_run(distribution_m=rng.units_n,distribution_x=rng.dx_n,distribution_h=rng.threshold_n,\
+                        mu_h=[mu_h_1,mu_h_2],sigma_h=[sigma_h_1,sigma_h_2],mu_x=[mu_x_1,mu_x_2],sigma_x=[sigma_x_1,sigma_x_2],err_type=0,number_of_options=number_of_options,\
+                        mu_m=[mu_m_1,mu_m_2],sigma_m=[sigma_m_1,sigma_m_2])
+                    if success == 1:
+                        count += 1
+                mu_va = {'$\sigma_{h_1}$':sigma_h_1,'$\sigma_{h_2}$':sigma_h_2,'$\sigma_{x_1}$': sigma_x_1,'$\sigma_{x_2}$': sigma_x_2,"success_rate":count/runs}
+                return mu_va
 
-        parallel(sigx1sigh1,sigma_h,sigma_x,columns_name=['$\sigma_{h_1}$','$\sigma_{h_2}$','$\sigma_{x_1}$','$\sigma_{x_2}$',"success_rate"],save_string=save_string,batch_size=3*len(sigma_h),continuation=continuation,do=True,mu_x=mu_x,n=number_of_options)
+            # parallel(sigx1sigh1,sigma_h,sigma_x,columns_name=['$\sigma_{h_1}$','$\sigma_{h_2}$','$\sigma_{x_1}$','$\sigma_{x_2}$',"success_rate"],save_string=save_string,batch_size=3*len(sigma_h),continuation=continuation,do=True,mu_x=mu_x,n=number_of_options)
 
-        # step = 0.0001
-        # prd = yn.Prediction()
-        # min_sig_h=[]
-        # for i in sigma_x:
-        #     sigma_x_1 = delta_sigma + i
-        #     sigma_x_2 = delta_sigma + i
-        #     sigma_x1 = List([sigma_x_1,sigma_x_2])
-        #     start1 = np.sum(mu_x)/2 - sigma_x_1-sigma_x_2-45
-        #     stop1 = np.sum(mu_x)/2 +sigma_x_1+sigma_x_1+45
-            
-        #     dis_x = np.round_(np.arange(start1,stop1,step),decimals=4)
-        #     pdf =  prd.gaussian(dis_x,mu_x,sigma_x1)
-        #     area = (np.sum(pdf)*step)
-        #     pdf_x = np.multiply(pdf,1/area)
-        #     mean_esmes2m = prd.ICPDF(1-(1/number_of_options),mu_x,stop1,step,dis_x,pdf_x)
-        #     es2m = prd.ICPDF(1-(5/(3*number_of_options)),mu_x,stop1,step,dis_x,pdf_x)
-        #     min_sig_h.append(mean_esmes2m-es2m)
-        # vis.data_visualize(file_name=save_string+".csv",save_plot=save_string,x_var_='$\sigma_{x_1}$',y_var_='$\sigma_{h_1}$',cbar_orien="vertical",num_of_opts=nop,line_labels=number_of_options,z_var_='success_rate',plot_type='graphics',gaussian=0,uniform=0)#,min_sig_h=min_sig_h)
-
-        message = str(nop)+' number of options simulation finished'
-        pushbullet_message('Python Code','Results out! '+message)
-        file_num += 1
+            # step = 0.0001
+            # prd = yn.Prediction()
+            # min_sig_h=[]
+            # for i in sigma_x:
+            #     sigma_x_1 = delta_sigma + i
+            #     sigma_x_2 = delta_sigma + i
+            #     sigma_x1 = List([sigma_x_1,sigma_x_2])
+            #     start1 = np.sum(mu_x)/2 - sigma_x_1-sigma_x_2-45
+            #     stop1 = np.sum(mu_x)/2 +sigma_x_1+sigma_x_1+45
+                
+            #     dis_x = np.round_(np.arange(start1,stop1,step),decimals=4)
+            #     pdf =  prd.gaussian(dis_x,mu_x,sigma_x1)
+            #     area = (np.sum(pdf)*step)
+            #     pdf_x = np.multiply(pdf,1/area)
+            #     mean_esmes2m = prd.ICPDF(1-(1/number_of_options),mu_x,stop1,step,dis_x,pdf_x)
+            #     es2m = prd.ICPDF(1-(5/(3*number_of_options)),mu_x,stop1,step,dis_x,pdf_x)
+            #     min_sig_h.append(mean_esmes2m-es2m)
+            [slope,intercept,hars] = vis.data_visualize(file_name=save_string+".csv",save_plot=save_string,x_var_='$\sigma_{x_1}$',y_var_='$\sigma_{h_1}$',cbar_orien="vertical",num_of_opts=nop,line_labels=number_of_options,z_var_='success_rate',plot_type='graphics',gaussian=0,uniform=0)#,min_sig_h=min_sig_h)
+            num_slopes.append([slope,hars])
+            message = str(nop)+' number of options simulation finished'
+            pushbullet_message('Python Code','Results out! '+message)
+            file_num += 1
+        mum_slopes.append(num_slopes)
+    plot_slopes(mum_slopes,mum,number_of_opts,ax,style=':')
 
 def align_yaxis(ax1, v1, ax2, v2):
     """adjust ax2 ylimit so that v2 in ax2 is aligned to v1 in ax1"""

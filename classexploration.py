@@ -561,6 +561,7 @@ class Visualization:
                 intercepts = [HRCC[0][1],predicted_hrcc[0][1]]
                 self.graphicPlot(a= y,b=x,x_name=r'%s'%(x_var_[:-3]+x_var_[-2:]),y_name=r'%s'%(y_var_[:-3]+y_var_[-2:]),z_name=z_var_,title="Number_of_options = "+str(num_of_opts),save_name=path+save_plot+x_var_[2:-1]+y_var_[2:-1]+'RCD_meanESMES2M.png',cbar_loc=cbar_orien,z_var=z_best,z_max_fit = HRCC[0],z_max_fit_lab=HRCC[1],options_line=[predicted_hrcc[0]],line_labels=[line_labels,predicted_hrcc[1]],d=d,delta_slope=delta_slope,intercepts = intercepts)
                 self.graphicPlot(a= y,b=x,x_name=r'%s'%(x_var_[:-3]+x_var_[-2:]),y_name=r'%s'%(y_var_[:-3]+y_var_[-2:]),z_name=z_var_,title="Number_of_options = "+str(num_of_opts),save_name=path+save_plot+x_var_[2:-1]+y_var_[2:-1]+'RCD_meanESMES2M.png',cbar_loc=cbar_orien,z_var=z,z_max_fit = HRCC[0],z_max_fit_lab=HRCC[1],options_line=[predicted_hrcc[0]],line_labels=[line_labels,predicted_hrcc[1]],d=d,delta_slope=delta_slope,intercepts = intercepts)
+            return [HRCC[0][0],HRCC[0][1],HRCC[1]]
 
         elif plot_type == 'line':
             z = z + z1
