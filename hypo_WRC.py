@@ -22,18 +22,18 @@ pval_WRC_normal = 0
 pval_WRC_bimodal_x_gaussian_h = 0
 pval_WRC_uniform_x_gaussian_h = 0
 bimodal_x_normal_h = 0
-bimodal_x_normal_h_sigma = 1
+bimodal_x_normal_h_sigma = 0
 uniform_x_uniform_h = 0
 uniform_x_uniform_h_sigma = 0
 uniform_x_normal_h = 0
-uniform_x_normal_h_sigma = 1
+uniform_x_normal_h_sigma = 0
 normal_x_normal_h = 0
 normal_x_normal_h_1 = 0
 normal_x_normal_h_sigma = 1
 
 wf = yn.workFlow()
 vis = yn.Visualization()
-fig, ax = plt.subplots()
+
 
 def parallel(func,a,b,batch_size,save_string,columns_name,continuation = False,do=False,mu_x=None,n=None):
     step = 0.0001
@@ -140,7 +140,8 @@ def plot_slopes(mum_slopes,mum,num_opts,ax,style):
         for j in range(len(mum)):
             x.append(mum[j])
             y.append(mum_slopes[j][i])
-        ax.plot(x,y,linewidth=num_opts[i],color = color[i],linestyles=style)
+        ax.plot(x,y,linewidth=num_opts[i],color = color[i],linestyles=style,label=num_opts[i])
+    
         
 
 if WRC_normal==1:
@@ -409,11 +410,11 @@ if bimodal_x_normal_h==1:
 
 if bimodal_x_normal_h_sigma==1:
     continuation = False
-    mum = [10,50,100,200,500]
+    mum_bxgh = [10,50,100,200,500]
     file_num = 0
-    mum_slopes = []
-    number_of_opts = [2,5,10,20,100]
-    for i in mum:
+    mum_slopes_bxgh = []
+    number_of_opts_bxgh = [2,5,10,20,100]
+    for i in mum_bxgh:
         mu_m_1 = i
         sigma_m_1 = 0
         mu_m_2 = i
@@ -433,7 +434,7 @@ if bimodal_x_normal_h_sigma==1:
         
         step = 0.0001
         num_slopes = []
-        for nop in number_of_opts:
+        for nop in number_of_opts_bxgh:
             number_of_options = nop
             save_string = str(file_num)+'bxgh_mx_mh_sigma_h_vs_sigma_x1_sigma_x2_vs_RCD_nop_'+str(nop) # str(file_num)+
             # save_string,param = save_data(save_string,continuation)
@@ -491,8 +492,8 @@ if bimodal_x_normal_h_sigma==1:
             message = str(nop)+' number of options simulation finished'
             pushbullet_message('Python Code','Results out! '+message)
             file_num += 1
-        mum_slopes.append(num_slopes)
-    plot_slopes(mum_slopes,mum,number_of_opts,ax,style='--')
+        mum_slopes_bxgh.append(num_slopes)
+    
 
 if uniform_x_uniform_h==1:
     continuation = False
@@ -651,11 +652,12 @@ if uniform_x_normal_h==1:
 
 if uniform_x_normal_h_sigma==1:
     continuation = False
-    mum = [10,50,100,200,500]
+    mum_uxgh = [10,50,100,200,500]
+    number_of_opts_uxgh = [2,5,10,20]
     cnt = 45
-    mum_slopes = []
-    for i in mum:
-        number_of_opts = [2,5,10,20]
+    mum_slopes_uxgh = []
+    for i in mum_uxgh:
+        
         mu_m_1=i
         sigma_m_1=0
         mu_m_2=i
@@ -672,7 +674,7 @@ if uniform_x_normal_h_sigma==1:
         sigma_x = [np.round(0.1+i*0.1,decimals=1) for i in range(151)]
         sigma_h = [np.round(0.1+i*0.1,decimals=1) for i in range(151)]
         num_slopes = []
-        for nop in number_of_opts:
+        for nop in number_of_opts_uxgh:
             number_of_options = nop
             save_string = str(cnt)+'uxgh_sigma_h_vs_sigma_x_vs_RCD_nop'+str(nop) # str(cnt)+
             # save_string,param = save_data(save_string,continuation)
@@ -723,8 +725,8 @@ if uniform_x_normal_h_sigma==1:
             message = str(nop)+' number of options simulation finished'
             pushbullet_message('Python Code','Results out! '+message)
             cnt += 1
-        mum_slopes.append(num_slopes)
-    plot_slopes(mum_slopes,mum,number_of_opts,ax,style='-.')
+        mum_slopes_uxgh.append(num_slopes)
+
 
 if normal_x_normal_h==1:
     continuation = False
@@ -876,11 +878,12 @@ if normal_x_normal_h_1==1:
 
 if normal_x_normal_h_sigma==1:
     continuation = False
-    mum = [10,50,100,200,500]
+    mum_gxgh = [10,50,100,200,500]
+    number_of_opts_gxgh = [2,5,10,20]
     file_num = 25
-    mum_slopes = []
-    for i in mum:
-        number_of_opts = [2,5,10,20]
+    mum_slopes_gxgh = []
+    for i in mum_gxgh:
+        
         mu_m_1=i
         sigma_m_1=0
         mu_m_2=i
@@ -896,7 +899,7 @@ if normal_x_normal_h_sigma==1:
         sigma_x = [np.round(i*0.1,decimals=1) for i in range(151)]
         sigma_h = [np.round(i*0.1,decimals=1) for i in range(151)]
         num_slopes = []
-        for nop in number_of_opts:
+        for nop in number_of_opts_gxgh:
             number_of_options = nop
             save_string = str(file_num)+'gxgh_mx=mh_sigma_h_vs_sigma_x_vs_RCD_nop_'+str(nop) # str(file_num)+
             # save_string,param = save_data(save_string,continuation)
@@ -950,8 +953,17 @@ if normal_x_normal_h_sigma==1:
             message = str(nop)+' number of options simulation finished'
             pushbullet_message('Python Code','Results out! '+message)
             file_num += 1
-        mum_slopes.append(num_slopes)
-    plot_slopes(mum_slopes,mum,number_of_opts,ax,style=':')
+        mum_slopes_gxgh.append(num_slopes)
+    
+
+fig, ax = plt.subplots()
+# plot_slopes(mum_slopes_bxgh,mum_bxgh,number_of_opts_bxgh,ax,style='--')
+# plot_slopes(mum_slopes_uxgh,mum_uxgh,number_of_opts_uxgh,ax,style='-.')
+plot_slopes(mum_slopes_gxgh,mum_gxgh,number_of_opts_gxgh,ax,style=':')
+plt.legend()
+plt.xlabel(r'$\mu_m$')
+plt.ylabel('Slope of best fit')
+plt.show()
 
 def align_yaxis(ax1, v1, ax2, v2):
     """adjust ax2 ylimit so that v2 in ax2 is aligned to v1 in ax1"""
