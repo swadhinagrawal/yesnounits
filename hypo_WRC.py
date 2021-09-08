@@ -15,6 +15,10 @@ import random_number_generator as rng
 from numba.typed import List
 import faulthandler
 import matplotlib.pyplot as plt
+import ray
+#from ray.util.multiprocessing import Pool
+
+#ray.init(address='auto', _redis_password='5241590000000000')
 path = os.getcwd() + "/results/"
 
 WRC_normal = 0
