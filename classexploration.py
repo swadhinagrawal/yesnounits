@@ -9,7 +9,7 @@ import pandas as pd
 import os
 import time
 import random_number_generator as rng
-from numba import  njit
+from numba import  njit,jit
 import random
 import requests
 import json
