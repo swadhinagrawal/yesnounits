@@ -22,11 +22,11 @@ pval_WRC_normal = 0
 pval_WRC_bimodal_x_gaussian_h = 0
 pval_WRC_uniform_x_gaussian_h = 0
 bimodal_x_normal_h = 0
-bimodal_x_normal_h_sigma = 0
+bimodal_x_normal_h_sigma = 1
 uniform_x_uniform_h = 0
 uniform_x_uniform_h_sigma = 0
 uniform_x_normal_h = 0
-uniform_x_normal_h_sigma = 0
+uniform_x_normal_h_sigma = 1
 normal_x_normal_h = 0
 normal_x_normal_h_1 = 0
 normal_x_normal_h_sigma = 1
@@ -99,7 +99,7 @@ def parallel(func,a,b,batch_size,save_string,columns_name,continuation = False,d
     opt_var = []
     progress = 0
     for i in range(0,len(inp),batch_size):
-        with Pool(18) as p:#,ray_address="auto") as p:
+        with Pool(20) as p:#,ray_address="auto") as p:
             opt_var = p.starmap(func,inp[i:i+batch_size])
         out = pd.DataFrame(data=opt_var,columns=columns_name)
         out.to_csv(f_path,mode = 'a',header = False, index=False)
@@ -139,8 +139,8 @@ def plot_slopes(mum_slopes,mum,num_opts,ax,style):
         y = []
         for j in range(len(mum)):
             x.append(mum[j])
-            y.append(mum_slopes[j][i])
-        ax.plot(x,y,linewidth=num_opts[i],color = color[i],linestyles=style,label=num_opts[i])
+            y.append(mum_slopes[j][i][0])
+        ax.plot(x,y,linewidth=0.1*num_opts[i],color = color[i],linestyle=style,label=num_opts[i])
     
         
 
@@ -410,10 +410,10 @@ if bimodal_x_normal_h==1:
 
 if bimodal_x_normal_h_sigma==1:
     continuation = False
-    mum_bxgh = [10,50,100,200,500]
+    mum_bxgh = [200,500]
     file_num = 0
     mum_slopes_bxgh = []
-    number_of_opts_bxgh = [2,5,10,20,100]
+    number_of_opts_bxgh = [2,5,10,20]
     for i in mum_bxgh:
         mu_m_1 = i
         sigma_m_1 = 0
@@ -426,8 +426,8 @@ if bimodal_x_normal_h_sigma==1:
         delta_mu = 5
         mu_x_1 = 5
         mu_x_2 = 5 + delta_mu
-        mu_h_1 = (mu_x_1+mu_x_2)/2
-        mu_h_2 = mu_h_1
+        # mu_h_1 = (mu_x_1+mu_x_2)/2
+        # mu_h_2 = mu_h_1
         mu_x = List([mu_x_1,mu_x_2])
         sigma_x = [np.round(0.1+i*0.1,decimals=1) for i in range(151)]
         sigma_h = [np.round(0.1+i*0.1,decimals=1) for i in range(151)]
@@ -436,22 +436,22 @@ if bimodal_x_normal_h_sigma==1:
         num_slopes = []
         for nop in number_of_opts_bxgh:
             number_of_options = nop
-            save_string = str(file_num)+'bxgh_mx_mh_sigma_h_vs_sigma_x1_sigma_x2_vs_RCD_nop_'+str(nop) # str(file_num)+
-            # save_string,param = save_data(save_string,continuation)
+            save_string = 'bxgh_mx_mh_sigma_h_vs_sigma_x1_sigma_x2_vs_RCD_nop_'+str(nop) # str(file_num)+
+            save_string,param = save_data(save_string,continuation)
 
-            # if isinstance(param,type(None))==False:
-            #     param.write("mu_m_1 : "+str(mu_m_1)+"\n")
-            #     param.write("mu_m_2 : "+str(mu_m_2)+"\n")
-            #     param.write("mu_x_1 : "+str(mu_x_1)+"\n")
-            #     param.write("mu_x_2 : "+str(mu_x_2)+"\n")
-            #     param.write("sigma_m_1 : "+str(sigma_m_1)+"\n")
-            #     param.write("sigma_m_2 : "+str(sigma_m_2)+"\n")
-            #     param.write("nop : "+str(number_of_options)+"\n")
-            #     param.write("mu_h_1 : "+str(mu_h_1)+"\n")
-            #     param.write("mu_h_2 : "+str(mu_h_2)+"\n")
+            if isinstance(param,type(None))==False:
+                param.write("mu_m_1 : "+str(mu_m_1)+"\n")
+                param.write("mu_m_2 : "+str(mu_m_2)+"\n")
+                param.write("mu_x_1 : "+str(mu_x_1)+"\n")
+                param.write("mu_x_2 : "+str(mu_x_2)+"\n")
+                param.write("sigma_m_1 : "+str(sigma_m_1)+"\n")
+                param.write("sigma_m_2 : "+str(sigma_m_2)+"\n")
+                param.write("nop : "+str(number_of_options)+"\n")
+                # param.write("mu_h_1 : "+str(mu_h_1)+"\n")
+                # param.write("mu_h_2 : "+str(mu_h_2)+"\n")
 
             
-            def sigx1sigh1(sigma_h,sigma_x):
+            def sigx1sigh1(sigma_h,sigma_x,mu_h_1,mu_h_2):
                 sigma_x_1 = delta_sigma + sigma_x
                 sigma_x_2 = delta_sigma + sigma_x
                 sigma_h_1 = sigma_h
@@ -467,7 +467,7 @@ if bimodal_x_normal_h_sigma==1:
                 mu_va = {'$\sigma_{h_1}$':sigma_h_1,'$\sigma_{h_2}$':sigma_h_2,'$\sigma_{x_1}$': sigma_x_1,'$\sigma_{x_2}$': sigma_x_2,"success_rate":count/runs}
                 return mu_va
 
-            # parallel(sigx1sigh1,sigma_h,sigma_x,columns_name=['$\sigma_{h_1}$','$\sigma_{h_2}$','$\sigma_{x_1}$','$\sigma_{x_2}$',"success_rate"],save_string=save_string,batch_size=3*len(sigma_h),continuation=continuation)#,do=True,mu_x=mu_x,n=number_of_options)
+            parallel(sigx1sigh1,sigma_h,sigma_x,columns_name=['$\sigma_{h_1}$','$\sigma_{h_2}$','$\sigma_{x_1}$','$\sigma_{x_2}$',"success_rate"],save_string=save_string,batch_size=3*len(sigma_h),continuation=continuation,do=True,mu_x=mu_x,n=number_of_options)
             # step = 0.0001
             # prd = yn.Prediction()
             # min_sig_h=[]
@@ -486,13 +486,14 @@ if bimodal_x_normal_h_sigma==1:
             #     es2m = prd.ICPDF(1-(5/(3*number_of_options)),mu_x,stop1,step,dis_x,pdf_x)
             #     min_sig_h.append(mean_esmes2m-es2m)
 
-            [slope,intercept,hars] = vis.data_visualize(file_name=save_string+".csv",save_plot=save_string,x_var_='$\sigma_{x_1}$',y_var_='$\sigma_{h_1}$',cbar_orien="vertical",num_of_opts=nop,line_labels=number_of_options,z_var_='success_rate',plot_type='graphics',gaussian=0,uniform=0)#,min_sig_h=min_sig_h
-            num_slopes.append([slope,hars])
+        #     [slope,intercept,hars] = vis.data_visualize(file_name=save_string+".csv",save_plot=save_string,x_var_='$\sigma_{x_1}$',y_var_='$\sigma_{h_1}$',cbar_orien="vertical",num_of_opts=nop,line_labels=number_of_options,z_var_='success_rate',plot_type='graphics',gaussian=0,uniform=0)#,min_sig_h=min_sig_h
+        #     num_slopes.append([slope,hars])
 
-            message = str(nop)+' number of options simulation finished'
-            pushbullet_message('Python Code','Results out! '+message)
-            file_num += 1
-        mum_slopes_bxgh.append(num_slopes)
+        #     message = str(nop)+' number of options simulation finished'
+        #     pushbullet_message('Python Code','Results out! '+message)
+        #     file_num += 1
+        #     print(file_num)
+        # mum_slopes_bxgh.append(num_slopes)
     
 
 if uniform_x_uniform_h==1:
@@ -665,8 +666,8 @@ if uniform_x_normal_h_sigma==1:
         
         mu_x_1 = 7.5
         mu_x_2 = 7.5
-        mu_h_1 = mu_x_1
-        mu_h_2 = mu_x_1
+        # mu_h_1 = mu_x_1
+        # mu_h_2 = mu_x_1
         mu_x = List([mu_x_1,mu_x_2])
         runs = 500
         batch_size = 50
@@ -676,20 +677,20 @@ if uniform_x_normal_h_sigma==1:
         num_slopes = []
         for nop in number_of_opts_uxgh:
             number_of_options = nop
-            save_string = str(cnt)+'uxgh_sigma_h_vs_sigma_x_vs_RCD_nop'+str(nop) # str(cnt)+
-            # save_string,param = save_data(save_string,continuation)
-            # if isinstance(param,type(None))==False:
-            #     param.write("mu_m_1 : "+str(mu_m_1)+"\n")
-            #     param.write("mu_m_2 : "+str(mu_m_2)+"\n")
-            #     param.write("mu_x_1 : "+str(mu_x_1)+"\n")
-            #     param.write("mu_x_2 : "+str(mu_x_2)+"\n")
-            #     param.write("sigma_m_1 : "+str(sigma_m_1)+"\n")
-            #     param.write("sigma_m_2 : "+str(sigma_m_2)+"\n")
-            #     param.write("nop : "+str(number_of_options)+"\n")
+            save_string = 'uxgh_sigma_h_vs_sigma_x_vs_RCD_nop'+str(nop) # str(cnt)+
+            save_string,param = save_data(save_string,continuation)
+            if isinstance(param,type(None))==False:
+                param.write("mu_m_1 : "+str(mu_m_1)+"\n")
+                param.write("mu_m_2 : "+str(mu_m_2)+"\n")
+                param.write("mu_x_1 : "+str(mu_x_1)+"\n")
+                param.write("mu_x_2 : "+str(mu_x_2)+"\n")
+                param.write("sigma_m_1 : "+str(sigma_m_1)+"\n")
+                param.write("sigma_m_2 : "+str(sigma_m_2)+"\n")
+                param.write("nop : "+str(number_of_options)+"\n")
                 # param.write("mu_h_1 : "+str(mu_h_1)+"\n")
                 # param.write("mu_h_2 : "+str(mu_h_2)+"\n")
 
-            def sigmax1sigmah1(sigh,sigx):
+            def sigmax1sigmah1(sigh,sigx,mu_h_1,mu_h_2):
                 mux1 = mu_x_1 - np.sqrt(3)*sigx
                 sigmax1 = mu_x_1 + np.sqrt(3)*sigx
                 count = 0
@@ -702,7 +703,7 @@ if uniform_x_normal_h_sigma==1:
                 mu_va = {'$\sigma_{h_1}$':sigh,'$\sigma_{h_2}$':sigh,'$\sigma_{x_1}$': sigx,'$\sigma_{x_2}$': sigx,"success_rate":count/runs}
                 return mu_va
 
-            # parallel(sigmax1sigmah1,sigma_h,sigma_x,columns_name=['$\sigma_{h_1}$','$\sigma_{h_2}$','$\sigma_{x_1}$','$\sigma_{x_2}$',"success_rate"],save_string=save_string,batch_size=3*len(sigma_h),do=True,mu_x=mu_x,n=number_of_options)
+            parallel(sigmax1sigmah1,sigma_h,sigma_x,columns_name=['$\sigma_{h_1}$','$\sigma_{h_2}$','$\sigma_{x_1}$','$\sigma_{x_2}$',"success_rate"],save_string=save_string,batch_size=3*len(sigma_h),do=True,mu_x=mu_x,n=number_of_options)
             # step = 0.0001
             # prd = yn.Prediction()
             # min_sig_h=[]
@@ -720,12 +721,13 @@ if uniform_x_normal_h_sigma==1:
             #     mean_esmes2m = prd.ICPDF(1-(1/number_of_options),mu_x,stop1,step,dis_x,pdf_x)
             #     es2m = prd.ICPDF(1-(5/(3*number_of_options)),mu_x,stop1,step,dis_x,pdf_x)
             #     min_sig_h.append(mean_esmes2m-es2m)
-            [slope,intercept,hars] = vis.data_visualize(file_name=save_string+".csv",save_plot=save_string,x_var_='$\sigma_{x_1}$',y_var_='$\sigma_{h_1}$',cbar_orien="vertical",num_of_opts=nop,line_labels=number_of_options,z_var_='success_rate',plot_type='graphics',delta_mu=delta_sigma,gaussian=0,uniform=0)#,min_sig_h=min_sig_h
-            num_slopes.append([slope,hars])
-            message = str(nop)+' number of options simulation finished'
-            pushbullet_message('Python Code','Results out! '+message)
-            cnt += 1
-        mum_slopes_uxgh.append(num_slopes)
+        #     [slope,intercept,hars] = vis.data_visualize(file_name=save_string+".csv",save_plot=save_string,x_var_='$\sigma_{x_1}$',y_var_='$\sigma_{h_1}$',cbar_orien="vertical",num_of_opts=nop,line_labels=number_of_options,z_var_='success_rate',plot_type='graphics',delta_mu=delta_sigma,gaussian=0,uniform=0)#,min_sig_h=min_sig_h
+        #     num_slopes.append([slope,hars])
+        #     message = str(nop)+' number of options simulation finished'
+        #     pushbullet_message('Python Code','Results out! '+message)
+            # cnt += 1
+            # print(cnt)
+        # mum_slopes_uxgh.append(num_slopes)
 
 
 if normal_x_normal_h==1:
@@ -901,20 +903,20 @@ if normal_x_normal_h_sigma==1:
         num_slopes = []
         for nop in number_of_opts_gxgh:
             number_of_options = nop
-            save_string = str(file_num)+'gxgh_mx=mh_sigma_h_vs_sigma_x_vs_RCD_nop_'+str(nop) # str(file_num)+
-            # save_string,param = save_data(save_string,continuation)
-            # if isinstance(param,type(None))==False:
-            #     param.write("mu_m_1 : "+str(mu_m_1)+"\n")
-            #     param.write("mu_m_2 : "+str(mu_m_2)+"\n")
-            #     param.write("mu_x_1 : "+str(mu_x_1)+"\n")
-            #     param.write("mu_x_2 : "+str(mu_x_2)+"\n")
-            #     param.write("sigma_m_1 : "+str(sigma_m_1)+"\n")
-            #     param.write("sigma_m_2 : "+str(sigma_m_2)+"\n")
-            #     param.write("nop : "+str(number_of_options)+"\n")
+            save_string = 'gxgh_mx=mh_sigma_h_vs_sigma_x_vs_RCD_nop_'+str(nop) # str(file_num)+
+            save_string,param = save_data(save_string,continuation)
+            if isinstance(param,type(None))==False:
+                param.write("mu_m_1 : "+str(mu_m_1)+"\n")
+                param.write("mu_m_2 : "+str(mu_m_2)+"\n")
+                param.write("mu_x_1 : "+str(mu_x_1)+"\n")
+                param.write("mu_x_2 : "+str(mu_x_2)+"\n")
+                param.write("sigma_m_1 : "+str(sigma_m_1)+"\n")
+                param.write("sigma_m_2 : "+str(sigma_m_2)+"\n")
+                param.write("nop : "+str(number_of_options)+"\n")
             #     param.write("mu_h_1 : "+str(mu_h_1)+"\n")
             #     param.write("mu_h_2 : "+str(mu_h_2)+"\n")
 
-            def sigx1sigh1(sigma_h,sigma_x):
+            def sigx1sigh1(sigma_h,sigma_x,mu_h_1,mu_h_2):
                 sigma_x_1 = sigma_x
                 sigma_x_2 = delta_sigma + sigma_x
                 sigma_h_1 = sigma_h
@@ -929,7 +931,7 @@ if normal_x_normal_h_sigma==1:
                 mu_va = {'$\sigma_{h_1}$':sigma_h_1,'$\sigma_{h_2}$':sigma_h_2,'$\sigma_{x_1}$': sigma_x_1,'$\sigma_{x_2}$': sigma_x_2,"success_rate":count/runs}
                 return mu_va
 
-            # parallel(sigx1sigh1,sigma_h,sigma_x,columns_name=['$\sigma_{h_1}$','$\sigma_{h_2}$','$\sigma_{x_1}$','$\sigma_{x_2}$',"success_rate"],save_string=save_string,batch_size=3*len(sigma_h),continuation=continuation,do=True,mu_x=mu_x,n=number_of_options)
+            parallel(sigx1sigh1,sigma_h,sigma_x,columns_name=['$\sigma_{h_1}$','$\sigma_{h_2}$','$\sigma_{x_1}$','$\sigma_{x_2}$',"success_rate"],save_string=save_string,batch_size=3*len(sigma_h),continuation=continuation,do=True,mu_x=mu_x,n=number_of_options)
 
             # step = 0.0001
             # prd = yn.Prediction()
@@ -948,22 +950,23 @@ if normal_x_normal_h_sigma==1:
             #     mean_esmes2m = prd.ICPDF(1-(1/number_of_options),mu_x,stop1,step,dis_x,pdf_x)
             #     es2m = prd.ICPDF(1-(5/(3*number_of_options)),mu_x,stop1,step,dis_x,pdf_x)
             #     min_sig_h.append(mean_esmes2m-es2m)
-            [slope,intercept,hars] = vis.data_visualize(file_name=save_string+".csv",save_plot=save_string,x_var_='$\sigma_{x_1}$',y_var_='$\sigma_{h_1}$',cbar_orien="vertical",num_of_opts=nop,line_labels=number_of_options,z_var_='success_rate',plot_type='graphics',gaussian=0,uniform=0)#,min_sig_h=min_sig_h)
-            num_slopes.append([slope,hars])
-            message = str(nop)+' number of options simulation finished'
-            pushbullet_message('Python Code','Results out! '+message)
-            file_num += 1
-        mum_slopes_gxgh.append(num_slopes)
+#             [slope,intercept,hars] = vis.data_visualize(file_name=save_string+".csv",save_plot=save_string,x_var_='$\sigma_{x_1}$',y_var_='$\sigma_{h_1}$',cbar_orien="vertical",num_of_opts=nop,line_labels=number_of_options,z_var_='success_rate',plot_type='graphics',gaussian=0,uniform=0)#,min_sig_h=min_sig_h)
+#             num_slopes.append([slope,hars])
+#             message = str(nop)+' number of options simulation finished'
+#             pushbullet_message('Python Code','Results out! '+message)
+#             file_num += 1
+#             print(file_num)
+#         mum_slopes_gxgh.append(num_slopes)
     
 
-fig, ax = plt.subplots()
+# fig, ax = plt.subplots()
 # plot_slopes(mum_slopes_bxgh,mum_bxgh,number_of_opts_bxgh,ax,style='--')
 # plot_slopes(mum_slopes_uxgh,mum_uxgh,number_of_opts_uxgh,ax,style='-.')
-plot_slopes(mum_slopes_gxgh,mum_gxgh,number_of_opts_gxgh,ax,style=':')
-plt.legend()
-plt.xlabel(r'$\mu_m$')
-plt.ylabel('Slope of best fit')
-plt.show()
+# plot_slopes(mum_slopes_gxgh,mum_gxgh,number_of_opts_gxgh,ax,style=':')
+# plt.legend()
+# plt.xlabel(r'$\mu_m$')
+# plt.ylabel('Slope of best fit')
+# plt.show()
 
 def align_yaxis(ax1, v1, ax2, v2):
     """adjust ax2 ylimit so that v2 in ax2 is aligned to v1 in ax1"""
@@ -1033,7 +1036,7 @@ if visua == 1:
         number_of_colors = number_of_options[nop]
 
         color = ["#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)])
-            for i in range(number_of_colors)]
+                    for i in range(number_of_colors)]
 
         for i in range(len(slices)+1):
             if i!=0 and i!=len(slices):

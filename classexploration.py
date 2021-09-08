@@ -539,9 +539,10 @@ class Visualization:
         if plot_type == 'graphics':
             HRCC = prd.optimization(xa,ya,z_only_best)
             if 'mu' not in x_var_:
-                self.linePlot(HRCC[2],HRCC[3],x_name='Number of iterations',y_name='Average HARS',z_name=[str(HRCC[1])],title='Maximizing ARS for best fit',save_name=path+save_plot+'HARS.pdf')
-                self.graphicPlot(a= y,b=x,x_name=r'%s'%x_var_,y_name=r'%s'%y_var_,z_name=z_var_,title="Number_of_options = "+str(num_of_opts),save_name=path+save_plot+x_var_[2:-1]+y_var_[2:-1]+'RCD.png',cbar_loc=cbar_orien,z_var=z_best,z_max_fit = HRCC[0],line_labels=line_labels,z_max_fit_lab=HRCC[1],min_sig_h=min_sig_h,intercepts = [HRCC[0][1]])#
-                self.graphicPlot(a= y,b=x,x_name=r'%s'%x_var_,y_name=r'%s'%y_var_,z_name=z_var_,title="Number_of_options = "+str(num_of_opts),save_name=path+save_plot+x_var_[2:-1]+y_var_[2:-1]+'RCD.png',cbar_loc=cbar_orien,z_var=z,z_max_fit = HRCC[0],line_labels=line_labels,z_max_fit_lab=HRCC[1],min_sig_h=min_sig_h,intercepts = [HRCC[0][1]])
+                pass
+                # self.linePlot(HRCC[2],HRCC[3],x_name='Number of iterations',y_name='Average HARS',z_name=[str(HRCC[1])],title='Maximizing ARS for best fit',save_name=path+save_plot+'HARS.pdf')
+                # self.graphicPlot(a= y,b=x,x_name=r'%s'%x_var_,y_name=r'%s'%y_var_,z_name=z_var_,title="Number_of_options = "+str(num_of_opts),save_name=path+save_plot+x_var_[2:-1]+y_var_[2:-1]+'RCD_min_max.png',cbar_loc=cbar_orien,z_var=z_best,z_max_fit = HRCC[0],line_labels=line_labels,z_max_fit_lab=HRCC[1],min_sig_h=min_sig_h,intercepts = [HRCC[0][1]])#
+                # self.graphicPlot(a= y,b=x,x_name=r'%s'%x_var_,y_name=r'%s'%y_var_,z_name=z_var_,title="Number_of_options = "+str(num_of_opts),save_name=path+save_plot+x_var_[2:-1]+y_var_[2:-1]+'RCD.png',cbar_loc=cbar_orien,z_var=z,z_max_fit = HRCC[0],line_labels=line_labels,z_max_fit_lab=HRCC[1],min_sig_h=min_sig_h,intercepts = [HRCC[0][1]])
             if gaussian ==1:
                 self.linePlot(HRCC[2],HRCC[3],x_name='Number of iterations',y_name='Average HRCC',z_name=[str(HRCC[1])],title='Maximizing HRCC for best fit',save_name=path+save_plot+'HRCC.pdf')
                 # Mean of ESM and ES2M
