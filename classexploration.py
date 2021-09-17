@@ -364,7 +364,7 @@ class Prediction:
         return x_
 
     @staticmethod
-    def optimization(x,y,z,max_iter=10,d = 1):
+    def optimization(x,y,z,max_iter=30,d = 1):
         iterations = 0
         thisgoodness1 = -np.Inf
         iter = []
@@ -405,7 +405,7 @@ class Prediction:
                 return loss
             
             model1.compile(loss=custom_loss(z_test), optimizer='sgd')
-            model1.fit(x_train, y_train, batch_size=len(x_train), epochs=2000)
+            model1.fit(x_train, y_train, batch_size=len(x_train), epochs=4000)
             set = range(len(x))
             for point1 in np.setdiff1d(set,selected):
                 dis = abs(model1.get_weights()[0][0][0]*x[point1]-y[point1]+model1.get_weights()[1][0])/((model1.get_weights()[0][0][0]*model1.get_weights()[0][0][0] + 1)**0.5)
@@ -466,7 +466,7 @@ class Prediction:
 
 class Visualization:
     def data_visualize(self,file_name,save_plot,x_var_,y_var_,z_var_,plot_type,gaussian=1,uniform=0,cbar_orien=None,line_labels=None,sigma_x_1=None,\
-        data =None,num_of_opts=None,delta_mu=None,sigma_x_2 = None,z1_var_=None,min_sig_h=None):
+        data =None,num_of_opts=None,delta_mu=None,sigma_x_2 = None,z1_var_=None,min_sig_h=None,mu_m=None):
         # gives data as array
 
         op = pd.read_csv(path+file_name)
@@ -520,7 +520,7 @@ class Visualization:
 
             if plot_type!='image':
                 # x,y,z for only HRCC
-                if i[z_var_] >= z_max-0.05:
+                if i[z_var_] >= z_max-0.05*(num_of_opts**(1/5))/(mu_m**(1/5)): # mu_h=mu_pred 0.015*(num_of_opts**(0.5))/(mu_m**(1/10))
                     z_best.append(i[z_var_])
                     z_only_best.append(i[z_var_])
                     xa.append(i[x_var_])
@@ -540,9 +540,9 @@ class Visualization:
             HRCC = prd.optimization(xa,ya,z_only_best)
             if 'mu' not in x_var_:
                 pass
-                # self.linePlot(HRCC[2],HRCC[3],x_name='Number of iterations',y_name='Average HARS',z_name=[str(HRCC[1])],title='Maximizing ARS for best fit',save_name=path+save_plot+'HARS.pdf')
-                # self.graphicPlot(a= y,b=x,x_name=r'%s'%x_var_,y_name=r'%s'%y_var_,z_name=z_var_,title="Number_of_options = "+str(num_of_opts),save_name=path+save_plot+x_var_[2:-1]+y_var_[2:-1]+'RCD_min_max.png',cbar_loc=cbar_orien,z_var=z_best,z_max_fit = HRCC[0],line_labels=line_labels,z_max_fit_lab=HRCC[1],min_sig_h=min_sig_h,intercepts = [HRCC[0][1]])#
-                # self.graphicPlot(a= y,b=x,x_name=r'%s'%x_var_,y_name=r'%s'%y_var_,z_name=z_var_,title="Number_of_options = "+str(num_of_opts),save_name=path+save_plot+x_var_[2:-1]+y_var_[2:-1]+'RCD.png',cbar_loc=cbar_orien,z_var=z,z_max_fit = HRCC[0],line_labels=line_labels,z_max_fit_lab=HRCC[1],min_sig_h=min_sig_h,intercepts = [HRCC[0][1]])
+                self.linePlot(HRCC[2],HRCC[3],x_name='Number of iterations',y_name='Average HARS',z_name=[str(HRCC[1])],title='Maximizing ARS for best fit',save_name=path+save_plot+'HARS.pdf')
+                self.graphicPlot(a= y,b=x,x_name=r'%s'%x_var_,y_name=r'%s'%y_var_,z_name=z_var_,title="Number_of_options = "+str(num_of_opts),save_name=path+save_plot+x_var_[2:-1]+y_var_[2:-1]+'RCD_min_max.png',cbar_loc=cbar_orien,z_var=z_best,z_max_fit = HRCC[0],line_labels=line_labels,z_max_fit_lab=HRCC[1],min_sig_h=min_sig_h,intercepts = [HRCC[0][1]])#
+                self.graphicPlot(a= y,b=x,x_name=r'%s'%x_var_,y_name=r'%s'%y_var_,z_name=z_var_,title="Number_of_options = "+str(num_of_opts),save_name=path+save_plot+x_var_[2:-1]+y_var_[2:-1]+'RCD.png',cbar_loc=cbar_orien,z_var=z,z_max_fit = HRCC[0],line_labels=line_labels,z_max_fit_lab=HRCC[1],min_sig_h=min_sig_h,intercepts = [HRCC[0][1]])
             if gaussian ==1:
                 self.linePlot(HRCC[2],HRCC[3],x_name='Number of iterations',y_name='Average HRCC',z_name=[str(HRCC[1])],title='Maximizing HRCC for best fit',save_name=path+save_plot+'HRCC.pdf')
                 # Mean of ESM and ES2M
@@ -550,7 +550,7 @@ class Visualization:
                 d = np.round(abs(predicted_hrcc[0][1]-HRCC[0][1])/ np.sqrt(HRCC[0][0]**2 +1),decimals=2)
                 delta_slope = np.round(abs(predicted_hrcc[0][0]-HRCC[0][0]),decimals=2)
                 intercepts = [HRCC[0][1],predicted_hrcc[0][1]]
-                self.graphicPlot(a= y,b=x,x_name=r'%s'%(x_var_[:-4]+x_var_[-2:]),y_name=r'%s'%(y_var_[:-4]+y_var_[-2:]),z_name=z_var_,title="Number_of_options = "+str(num_of_opts),save_name=path+save_plot+x_var_[2:-1]+y_var_[2:-1]+'RCD_meanESMES2M.png',cbar_loc=cbar_orien,z_var=z_best,z_max_fit = HRCC[0],z_max_fit_lab=HRCC[1],options_line=[predicted_hrcc[0]],line_labels=[line_labels,predicted_hrcc[1]],d=d,delta_slope=delta_slope,intercepts = intercepts)
+                self.graphicPlot(a= y,b=x,x_name=r'%s'%(x_var_[:-4]+x_var_[-2:]),y_name=r'%s'%(y_var_[:-4]+y_var_[-2:]),z_name=z_var_,title="Number_of_options = "+str(num_of_opts),save_name=path+save_plot+x_var_[2:-1]+y_var_[2:-1]+'RCD_meanESMES2M_min_max.png',cbar_loc=cbar_orien,z_var=z_best,z_max_fit = HRCC[0],z_max_fit_lab=HRCC[1],options_line=[predicted_hrcc[0]],line_labels=[line_labels,predicted_hrcc[1]],d=d,delta_slope=delta_slope,intercepts = intercepts)
                 self.graphicPlot(a= y,b=x,x_name=r'%s'%(x_var_[:-4]+x_var_[-2:]),y_name=r'%s'%(y_var_[:-4]+y_var_[-2:]),z_name=z_var_,title="Number_of_options = "+str(num_of_opts),save_name=path+save_plot+x_var_[2:-1]+y_var_[2:-1]+'RCD_meanESMES2M.png',cbar_loc=cbar_orien,z_var=z,z_max_fit = HRCC[0],z_max_fit_lab=HRCC[1],options_line=[predicted_hrcc[0]],line_labels=[line_labels,predicted_hrcc[1]],d=d,delta_slope=delta_slope,intercepts = intercepts)
 
             if uniform ==1:
@@ -560,8 +560,8 @@ class Visualization:
                 d = np.round(abs(predicted_hrcc[0][1]-HRCC[0][1])/ np.sqrt(HRCC[0][0]**2 +1),decimals=2)
                 delta_slope = np.round(abs(predicted_hrcc[0][0]-HRCC[0][0]),decimals=2)
                 intercepts = [HRCC[0][1],predicted_hrcc[0][1]]
-                self.graphicPlot(a= y,b=x,x_name=r'%s'%(x_var_[:-3]+x_var_[-2:]),y_name=r'%s'%(y_var_[:-3]+y_var_[-2:]),z_name=z_var_,title="Number_of_options = "+str(num_of_opts),save_name=path+save_plot+x_var_[2:-1]+y_var_[2:-1]+'RCD_meanESMES2M.png',cbar_loc=cbar_orien,z_var=z_best,z_max_fit = HRCC[0],z_max_fit_lab=HRCC[1],options_line=[predicted_hrcc[0]],line_labels=[line_labels,predicted_hrcc[1]],d=d,delta_slope=delta_slope,intercepts = intercepts)
-                self.graphicPlot(a= y,b=x,x_name=r'%s'%(x_var_[:-3]+x_var_[-2:]),y_name=r'%s'%(y_var_[:-3]+y_var_[-2:]),z_name=z_var_,title="Number_of_options = "+str(num_of_opts),save_name=path+save_plot+x_var_[2:-1]+y_var_[2:-1]+'RCD_meanESMES2M.png',cbar_loc=cbar_orien,z_var=z,z_max_fit = HRCC[0],z_max_fit_lab=HRCC[1],options_line=[predicted_hrcc[0]],line_labels=[line_labels,predicted_hrcc[1]],d=d,delta_slope=delta_slope,intercepts = intercepts)
+                self.graphicPlot(a= y,b=x,x_name=r'%s'%(x_var_[:-4]+x_var_[-2:]),y_name=r'%s'%(y_var_[:-4]+y_var_[-2:]),z_name=z_var_,title="Number_of_options = "+str(num_of_opts),save_name=path+save_plot+x_var_[2:-1]+y_var_[2:-1]+'RCD_meanESMES2M_min_max.png',cbar_loc=cbar_orien,z_var=z_best,z_max_fit = HRCC[0],z_max_fit_lab=HRCC[1],options_line=[predicted_hrcc[0]],line_labels=[line_labels,predicted_hrcc[1]],d=d,delta_slope=delta_slope,intercepts = intercepts)
+                self.graphicPlot(a= y,b=x,x_name=r'%s'%(x_var_[:-4]+x_var_[-2:]),y_name=r'%s'%(y_var_[:-4]+y_var_[-2:]),z_name=z_var_,title="Number_of_options = "+str(num_of_opts),save_name=path+save_plot+x_var_[2:-1]+y_var_[2:-1]+'RCD_meanESMES2M.png',cbar_loc=cbar_orien,z_var=z,z_max_fit = HRCC[0],z_max_fit_lab=HRCC[1],options_line=[predicted_hrcc[0]],line_labels=[line_labels,predicted_hrcc[1]],d=d,delta_slope=delta_slope,intercepts = intercepts)
             return [HRCC[0][0],HRCC[0][1],HRCC[1]]
 
         elif plot_type == 'line':
@@ -603,7 +603,7 @@ class Visualization:
         plt.ylabel(y_name)
         plt.legend(z_name,markerscale = 3, title = title)
         plt.savefig(save_name,format = "pdf")
-        plt.show()
+        # plt.show()
 
     def graphicPlot(self,a,b,x_name,y_name,z_name,title,save_name,cbar_loc,z_var,z_max_fit=None,z_max_fit_lab = None,options_line=None,line_labels=None,d=None,delta_slope=None,intercepts = None,min_sig_h=None):
         points = []
@@ -662,10 +662,10 @@ class Visualization:
             
             plt.savefig(save_name,format = "png")
             return points
-
+        plt.savefig(save_name,format = "png")
         point = fig.canvas.mpl_connect('button_press_event', onclick)
         pushbullet_message('Python Code','Pick the point! ')
-        plt.show()
+        # plt.show()
         
         
     def barPlot(self,quor,opt_v,save_name,correct):
