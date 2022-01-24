@@ -520,7 +520,7 @@ class Visualization:
 
             if plot_type!='image':
                 # x,y,z for only HRCC
-                if i[z_var_] >= z_max-0.05*(num_of_opts**(1/5))/(mu_m**(1/5)): # mu_h=mu_pred 0.015*(num_of_opts**(0.5))/(mu_m**(1/10))
+                if i[z_var_] >= z_max-0.015*(num_of_opts**(0.5))/(mu_m**(1/10)): # mu_h=mu_pred sigma= 0.015*(num_of_opts**(0.5))/(mu_m**(1/10)),0.02*(num_of_opts**(0.5)),mu = 0.05*(num_of_opts**(1/5))/(mu_m**(1/5))
                     z_best.append(i[z_var_])
                     z_only_best.append(i[z_var_])
                     xa.append(i[x_var_])
@@ -593,7 +593,8 @@ class Visualization:
     def linePlot(self,x,y,x_name,y_name,z_name,title,save_name):
         c = ["blue","green","red","purple","brown","yellow","black","orange","pink"]
         line_style = ["-","--",":","-."]
-        fig = plt.figure(figsize=(15, 8), dpi= 90, facecolor='w', edgecolor='k')
+        # fig = plt.figure(figsize=(15, 8), dpi= 90, facecolor='w', edgecolor='k')
+        fig, ax = plt.subplots()
         plt.style.use("ggplot")
         for i in range(len(z_name)):
             plt.plot(x,[y[s] for s in range(i*len(x),(i+1)*len(x),1)],c = c[i],linewidth = 1,linestyle=line_style[i%len(line_style)])
@@ -663,7 +664,7 @@ class Visualization:
             plt.savefig(save_name,format = "png")
             return points
         plt.savefig(save_name,format = "png")
-        point = fig.canvas.mpl_connect('button_press_event', onclick)
+        # point = fig.canvas.mpl_connect('button_press_event', onclick)
         pushbullet_message('Python Code','Pick the point! ')
         # plt.show()
         
@@ -715,7 +716,7 @@ if crosscheck == 1:
     ax.fill_between(x[:np.argmin(np.abs(x-x_))],0,pdfu[:np.argmin(np.abs(x-x_))],facecolor='orange')
     plt.show()
 
-check_qualityrange = 0
+check_qualityrange = 1
 if check_qualityrange == 1:
     fig = plt.figure()
     ax = fig.add_subplot(121)
