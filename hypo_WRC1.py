@@ -1823,7 +1823,7 @@ if err_plt:
     plt.show()
 
 
-slopes_HARS = 1
+slopes_HARS = 0
 def legend_func(func,bxgh_fit,uxgh_fit,gxgh_fit,func1,axes):
     marker=['o','s','*','D','X','p','d','v','^','P','H','8']
     colors = ['slateblue','lightseagreen','coral']
@@ -1839,7 +1839,7 @@ def legend_func(func,bxgh_fit,uxgh_fit,gxgh_fit,func1,axes):
     # leg1 = plt.legend(point_leg,labels,loc='upper center', bbox_to_anchor=(0.5, 1.5),fontsize=12,prop=dict(weight='bold'),labelcolor=(0.3,0.3,0.3,1))
     # leg3 = plt.legend(point_leg,dist_lab,loc='upper center', bbox_to_anchor=(0.5, 1.1),fontsize=12,prop=dict(weight='bold'),labelcolor=(0.3,0.3,0.3,1),ncol=3,columnspacing=3,frameon=False)
     leg1 = plt.legend(point_leg,labels,loc='upper center', bbox_to_anchor=(0.5, 1.7),fontsize=12,prop=dict(weight='bold'),labelcolor=(0.3,0.3,0.3,1))
-    leg3 = plt.legend(point_leg,dist_lab,loc='upper center', bbox_to_anchor=(0.5, 1.2),fontsize=12,prop=dict(weight='bold'),labelcolor=(0.3,0.3,0.3,1),ncol=3,columnspacing=3,frameon=False)
+    leg3 = plt.legend(point_leg,dist_lab,loc='upper center', bbox_to_anchor=(0.5, 1.1),fontsize=12,prop=dict(weight='bold'),labelcolor=(0.3,0.3,0.3,1),ncol=3,columnspacing=3,frameon=False)
     leg2 = plt.legend(point_leg1,labels1,loc='upper left', bbox_to_anchor=(1, 1),fontsize=12,prop=dict(weight='bold'),labelcolor=(0.3,0.3,0.3,1),frameon=False)
     axes.add_artist(leg1)
     axes.add_artist(leg2)
@@ -1861,7 +1861,7 @@ def legend_func_mum(func,bxgh_fit,uxgh_fit,gxgh_fit,func1,axes):
     # leg1 = plt.legend(point_leg,labels,loc='upper center', bbox_to_anchor=(0.5, 1.5),fontsize=12,prop=dict(weight='bold'),labelcolor=(0.3,0.3,0.3,1))
     # leg3 = plt.legend(point_leg,dist_lab,loc='upper center', bbox_to_anchor=(0.5, 1.1),fontsize=12,prop=dict(weight='bold'),labelcolor=(0.3,0.3,0.3,1),ncol=3,columnspacing=3,frameon=False)
     leg1 = plt.legend(point_leg,labels,loc='upper center', bbox_to_anchor=(0.5, 1.7),fontsize=12,prop=dict(weight='bold'),labelcolor=(0.3,0.3,0.3,1))
-    leg3 = plt.legend(point_leg,dist_lab,loc='upper center', bbox_to_anchor=(0.5, 1.2),fontsize=12,prop=dict(weight='bold'),labelcolor=(0.3,0.3,0.3,1),ncol=3,columnspacing=3,frameon=False)
+    leg3 = plt.legend(point_leg,dist_lab,loc='upper center', bbox_to_anchor=(0.5, 1.1),fontsize=12,prop=dict(weight='bold'),labelcolor=(0.3,0.3,0.3,1),ncol=3,columnspacing=3,frameon=False)
     leg2 = plt.legend(point_leg1,labels1,loc='upper left', bbox_to_anchor=(1, 1),fontsize=12,prop=dict(weight='bold'),labelcolor=(0.3,0.3,0.3,1),frameon=False)
     axes.add_artist(leg1)
     axes.add_artist(leg2)
@@ -1869,47 +1869,47 @@ def legend_func_mum(func,bxgh_fit,uxgh_fit,gxgh_fit,func1,axes):
 
 
 if slopes_HARS ==1:
-    # # plt.style.use('ggplot')
-    # fig, ax = plt.subplots()
-    # bxgh_fit = plot_slopes(ax,'bxgh',color='slateblue',save_string=bxgh_string)
-    # uxgh_fit = plot_slopes(ax,'uxgh',color='lightseagreen',save_string=uxgh_string)
-    # gxgh_fit = plot_slopes(ax,'gxgh',color='coral',save_string=gxgh_string)
+    # plt.style.use('ggplot')
+    fig, ax = plt.subplots()
+    bxgh_fit = plot_slopes(ax,'bxgh',color='slateblue',save_string=bxgh_string)
+    uxgh_fit = plot_slopes(ax,'uxgh',color='lightseagreen',save_string=uxgh_string)
+    gxgh_fit = plot_slopes(ax,'gxgh',color='coral',save_string=gxgh_string)
 
-    # function = lambda log_fit : ('['+r'$\bf %.2f \log_{10}^{2}{\mu_m} %+.2f \log_{10}{\mu_m} %+.2f$'%(np.round(log_fit[0],decimals=2),np.round(log_fit[1],decimals=2),np.round(log_fit[2],decimals=2))+']')
-    # legend_func(function,bxgh_fit,uxgh_fit,gxgh_fit,function,ax)
+    function = lambda log_fit : ('['+r'$\bf %.2f \log_{10}^{2}{\mu_m} %+.2f \log_{10}{\mu_m} %+.2f$'%(np.round(log_fit[0],decimals=2),np.round(log_fit[1],decimals=2),np.round(log_fit[2],decimals=2))+']')
+    legend_func(function,bxgh_fit,uxgh_fit,gxgh_fit,function,ax)
 
-    # plt.xlabel(r'$\bf \mu_m$',fontproperties)
-    # plt.ylabel('Slope of best fit in '+ylab1,fontproperties)
-    # plt.savefig(initials+"slope_mum.eps",bbox_inches="tight",pad_inches=0.2)
-    # plt.show()
+    plt.xlabel(r'$\bf \mu_m$',fontproperties)
+    plt.ylabel('Slope of best fit in '+ylab1,fontproperties)
+    plt.savefig(initials+"slope_mum.eps",bbox_inches="tight",pad_inches=0.2)
+    plt.show()
 
-    # # plt.style.use('ggplot')
-    # fig, ax = plt.subplots()  
-    # bxgh_fit = plot_inter(ax,'bxgh',color='slateblue',save_string=bxgh_string)
-    # uxgh_fit = plot_inter(ax,'uxgh',color='lightseagreen',save_string=uxgh_string)
-    # gxgh_fit = plot_inter(ax,'gxgh',color='coral',save_string=gxgh_string)
+    # plt.style.use('ggplot')
+    fig, ax = plt.subplots()  
+    bxgh_fit = plot_inter(ax,'bxgh',color='slateblue',save_string=bxgh_string)
+    uxgh_fit = plot_inter(ax,'uxgh',color='lightseagreen',save_string=uxgh_string)
+    gxgh_fit = plot_inter(ax,'gxgh',color='coral',save_string=gxgh_string)
 
-    # function = lambda linear_fit : ('['+r'$\bf %.2f\mu_m %+.2f$'%(np.round(linear_fit[0],decimals=2),np.round(linear_fit[1],decimals=2))+']')
-    # legend_func(function,bxgh_fit,uxgh_fit,gxgh_fit,function,ax)
+    function = lambda linear_fit : ('['+r'$\bf %.2f\mu_m %+.2f$'%(np.round(linear_fit[0],decimals=2),np.round(linear_fit[1],decimals=2))+']')
+    legend_func(function,bxgh_fit,uxgh_fit,gxgh_fit,function,ax)
     
-    # plt.xlabel(r'$\bf \mu_m$',fontproperties)
-    # plt.ylabel('Intercept of best fit in '+ylab1,fontproperties)
-    # plt.savefig(initials+"Intercept_mum.eps",bbox_inches="tight",pad_inches=0.2)
-    # plt.show()
+    plt.xlabel(r'$\bf \mu_m$',fontproperties)
+    plt.ylabel('Intercept of best fit in '+ylab1,fontproperties)
+    plt.savefig(initials+"Intercept_mum.eps",bbox_inches="tight",pad_inches=0.2)
+    plt.show()
 
-    # # plt.style.use('ggplot')
-    # fig, ax = plt.subplots()
-    # bxgh_fit = plot_HARS(ax,'bxgh',color='slateblue',save_string=bxgh_string)
-    # uxgh_fit = plot_HARS(ax,'uxgh',color='lightseagreen',save_string=uxgh_string)
-    # gxgh_fit = plot_HARS(ax,'gxgh',color='coral',save_string=gxgh_string)
+    # plt.style.use('ggplot')
+    fig, ax = plt.subplots()
+    bxgh_fit = plot_HARS(ax,'bxgh',color='slateblue',save_string=bxgh_string)
+    uxgh_fit = plot_HARS(ax,'uxgh',color='lightseagreen',save_string=uxgh_string)
+    gxgh_fit = plot_HARS(ax,'gxgh',color='coral',save_string=gxgh_string)
 
-    # function = lambda log_fit : ('['+r'$\bf %.2f \log_{10}^{2}{\mu_m} %+.2f \log_{10}{\mu_m} %+.2f$'%(np.round(log_fit[0],decimals=2),np.round(log_fit[1],decimals=2),np.round(log_fit[2],decimals=2))+']')
-    # legend_func(function,bxgh_fit,uxgh_fit,gxgh_fit,function,ax)
+    function = lambda log_fit : ('['+r'$\bf %.2f \log_{10}^{2}{\mu_m} %+.2f \log_{10}{\mu_m} %+.2f$'%(np.round(log_fit[0],decimals=2),np.round(log_fit[1],decimals=2),np.round(log_fit[2],decimals=2))+']')
+    legend_func(function,bxgh_fit,uxgh_fit,gxgh_fit,function,ax)
 
-    # plt.xlabel(r'$\bf \mu_m$',fontproperties)
-    # plt.ylabel(r'$\mu_{HARS}$'+' of best fit in '+ylab1,fontproperties)
-    # plt.savefig(initials+"HARS_mum.eps",bbox_inches="tight",pad_inches=0.2)
-    # plt.show()
+    plt.xlabel(r'$\bf \mu_m$',fontproperties)
+    plt.ylabel(r'$\mu_{HARS}$'+' of best fit in '+ylab1,fontproperties)
+    plt.savefig(initials+"HARS_mum.eps",bbox_inches="tight",pad_inches=0.2)
+    plt.show()
 
     # plt.style.use('ggplot')
     fig, ax = plt.subplots()
@@ -1923,7 +1923,7 @@ if slopes_HARS ==1:
     plt.xlabel('Number of options (n)',fontproperties)
     plt.ylabel('Intercept of best fit in '+ylab1,fontproperties)
     plt.savefig(initials+"Intercept_n.eps",bbox_inches="tight",pad_inches=0.2)
-    # plt.show()
+    plt.show()
 
     # plt.style.use('ggplot')
     fig, ax = plt.subplots()
@@ -1940,47 +1940,47 @@ if slopes_HARS ==1:
     plt.xlabel('Number of options (n)',fontproperties)
     plt.ylabel('Slope of best fit in '+ylab1,fontproperties)
     plt.savefig(initials+"Slope_n.eps",bbox_inches="tight",pad_inches=0.2)
-    # plt.show()
+    plt.show()
 
-    # # plt.style.use('ggplot')
-    # fig, ax = plt.subplots()
-    # bxgh_fit = plot_HARS_n(ax,'bxgh',color='slateblue',save_string=bxgh_string)
-    # uxgh_fit = plot_HARS_n(ax,'uxgh',color='lightseagreen',save_string=uxgh_string)
-    # gxgh_fit = plot_HARS_n(ax,'gxgh',color='coral',save_string=gxgh_string)
+    # plt.style.use('ggplot')
+    fig, ax = plt.subplots()
+    bxgh_fit = plot_HARS_n(ax,'bxgh',color='slateblue',save_string=bxgh_string)
+    uxgh_fit = plot_HARS_n(ax,'uxgh',color='lightseagreen',save_string=uxgh_string)
+    gxgh_fit = plot_HARS_n(ax,'gxgh',color='coral',save_string=gxgh_string)
 
-    # function = lambda exp_fit : ('['+r'$\bf e^{%.2fn %+.2f}$'%(np.round(exp_fit[1],decimals=2),np.round(exp_fit[2],decimals=2))+']')
-    # legend_func_mum(function,bxgh_fit,uxgh_fit,gxgh_fit,function,ax)
+    function = lambda exp_fit : ('['+r'$\bf e^{%.2fn %+.2f}$'%(np.round(exp_fit[1],decimals=2),np.round(exp_fit[2],decimals=2))+']')
+    legend_func_mum(function,bxgh_fit,uxgh_fit,gxgh_fit,function,ax)
 
-    # plt.xlabel('Number of options (n)',fontproperties)
-    # plt.ylabel(r'$\mu_{HARS}$'+' of best fit in '+ylab1,fontproperties)
-    # plt.savefig(initials+"HARS_n.eps",bbox_inches="tight",pad_inches=0.2)
-    # plt.show()
+    plt.xlabel('Number of options (n)',fontproperties)
+    plt.ylabel(r'$\mu_{HARS}$'+' of best fit in '+ylab1,fontproperties)
+    plt.savefig(initials+"HARS_n.eps",bbox_inches="tight",pad_inches=0.2)
+    plt.show()
 
-    # fig, ax = plt.subplots()
-    # bxgh_fit = plot_HARS_n_err(ax,'bxgh',color='slateblue',save_string=bxgh_string,save_string1=bxgh_string1)
-    # uxgh_fit = plot_HARS_n_err(ax,'uxgh',color='lightseagreen',save_string=uxgh_string,save_string1=uxgh_string1)
-    # gxgh_fit = plot_HARS_n_err(ax,'gxgh',color='coral',save_string=gxgh_string,save_string1=gxgh_string1)
+    fig, ax = plt.subplots()
+    bxgh_fit = plot_HARS_n_err(ax,'bxgh',color='slateblue',save_string=bxgh_string,save_string1=bxgh_string1)
+    uxgh_fit = plot_HARS_n_err(ax,'uxgh',color='lightseagreen',save_string=uxgh_string,save_string1=uxgh_string1)
+    gxgh_fit = plot_HARS_n_err(ax,'gxgh',color='coral',save_string=gxgh_string,save_string1=gxgh_string1)
 
-    # function = lambda exp_fit : ('['+r'$\bf e^{%.2fn %+.2f}$'%(np.round(exp_fit[1],decimals=2),np.round(exp_fit[2],decimals=2))+']')
-    # legend_func_mum(function,bxgh_fit,uxgh_fit,gxgh_fit,function,ax)
+    function = lambda exp_fit : ('['+r'$\bf e^{%.2fn %+.2f}$'%(np.round(exp_fit[1],decimals=2),np.round(exp_fit[2],decimals=2))+']')
+    legend_func_mum(function,bxgh_fit,uxgh_fit,gxgh_fit,function,ax)
 
-    # plt.xlabel('Number of options (n)',fontproperties)
-    # plt.ylabel(r'$\Delta_{\mu_{HARS}}$'+' of best fit in '+ylab1,fontproperties)
-    # plt.savefig(initials1+initials+"HARS_n_diff.eps",bbox_inches="tight",pad_inches=0.2)
-    # plt.show()
+    plt.xlabel('Number of options (n)',fontproperties)
+    plt.ylabel(r'$\Delta_{\mu_{HARS}}$'+' of best fit in '+ylab1,fontproperties)
+    plt.savefig(initials1+initials+"HARS_n_diff.eps",bbox_inches="tight",pad_inches=0.2)
+    plt.show()
 
-    # fig, ax = plt.subplots()
-    # bxgh_fit = plot_HARS_err(ax,'bxgh',color='slateblue',save_string=bxgh_string,save_string1=bxgh_string1)
-    # uxgh_fit = plot_HARS_err(ax,'uxgh',color='lightseagreen',save_string=uxgh_string,save_string1=uxgh_string1)
-    # gxgh_fit = plot_HARS_err(ax,'gxgh',color='coral',save_string=gxgh_string,save_string1=gxgh_string1)
+    fig, ax = plt.subplots()
+    bxgh_fit = plot_HARS_err(ax,'bxgh',color='slateblue',save_string=bxgh_string,save_string1=bxgh_string1)
+    uxgh_fit = plot_HARS_err(ax,'uxgh',color='lightseagreen',save_string=uxgh_string,save_string1=uxgh_string1)
+    gxgh_fit = plot_HARS_err(ax,'gxgh',color='coral',save_string=gxgh_string,save_string1=gxgh_string1)
 
-    # function = lambda log_fit : ('['+r'$\bf %.2f \log_{10}^{2}{\mu_m} %+.2f \log_{10}{\mu_m} %+.2f$'%(np.round(log_fit[0],decimals=2),np.round(log_fit[1],decimals=2),np.round(log_fit[2],decimals=2))+']')
-    # legend_func(function,bxgh_fit,uxgh_fit,gxgh_fit,function,ax)
+    function = lambda log_fit : ('['+r'$\bf %.2f \log_{10}^{2}{\mu_m} %+.2f \log_{10}{\mu_m} %+.2f$'%(np.round(log_fit[0],decimals=2),np.round(log_fit[1],decimals=2),np.round(log_fit[2],decimals=2))+']')
+    legend_func(function,bxgh_fit,uxgh_fit,gxgh_fit,function,ax)
 
-    # plt.xlabel(r'$\bf \mu_m$',fontproperties)
-    # plt.ylabel(r'$\Delta_{\mu_{HARS}}$'+' of best fit in '+ylab1,fontproperties)
-    # plt.savefig(initials1+initials+"HARS_mum_err.eps",bbox_inches="tight",pad_inches=0.2)
-    # plt.show()
+    plt.xlabel(r'$\bf \mu_m$',fontproperties)
+    plt.ylabel(r'$\Delta_{\mu_{HARS}}$'+' of best fit in '+ylab1,fontproperties)
+    plt.savefig(initials1+initials+"HARS_mum_err.eps",bbox_inches="tight",pad_inches=0.2)
+    plt.show()
 
 def align_yaxis(ax1, v1, ax2, v2):
     """adjust ax2 ylimit so that v2 in ax2 is aligned to v1 in ax1"""
@@ -1992,7 +1992,7 @@ def align_yaxis(ax1, v1, ax2, v2):
     miny, maxy = ax2.get_ylim()
     ax2.set_ylim(miny+dy, maxy+dy)
 
-visua = 0
+visua = 1
 prd = yn.Prediction()
 font = {"fontsize":18,"fontweight":'bold'}
 from matplotlib import rc,rcParams
