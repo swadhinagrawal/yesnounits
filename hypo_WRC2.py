@@ -1530,11 +1530,11 @@ if normal_x_normal_h==1:
 
 if normal_x_normal_h_plotter==1:
     mum_bxgh = [100]
-    number_of_opts_gxgh = [2,10,30]
-    cnt = 469
+    number_of_opts_gxgh = [2,40]
+    cnt = 485
     num_slopes_gxgh = []
     plt.style.use('ggplot')
-    fig, ax = plt.subplots(1,3,figsize=(30,10),sharey=True)
+    fig, ax = plt.subplots(1,2,figsize=(30,10),sharey=True)
     z_name = "Average rate of success"
     colors = ['red','darkslategrey','maroon']
     for i in mum_bxgh:
@@ -1569,7 +1569,7 @@ if normal_x_normal_h_plotter==1:
             z = np.array(z_var).reshape(len(a),len(b))
             cs = ax[nop].pcolormesh(b,a,z,shading='auto')
             axes_data.append([a,b,z])
-            cnt += 3
+            cnt += 7
             ax[len(ax)-nop-1].set_aspect('equal', 'box')
             if isinstance(cbar,type(None))==True:
                 cax = fig.add_axes([ax[2].get_position().x1+0.12,ax[2].get_position().y0+0.1,0.02,ax[2].get_position().height*0.7])
@@ -2279,3 +2279,4 @@ if reflection_plot == 1:
 #     plt.xlabel('n')
 #     plt.ylabel('HARS of best fit')
 #     plt.show()
+
