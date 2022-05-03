@@ -4,6 +4,7 @@
 # Author: Swadhin Agrawal
 # E-mail: swadhin20@iiserb.ac.in
 
+from cProfile import label
 import numpy as np
 import classexploration1 as yn
 from multiprocessing import Pool
@@ -29,13 +30,13 @@ WRC_normal = 0
 pval_WRC_normal = 0
 pval_WRC_bimodal_x_gaussian_h = 0
 pval_WRC_uniform_x_gaussian_h = 0
-bimodal_x_normal_h = 0
+bimodal_x_normal_h = 1
 bimodal_x_normal_h_sigma = 0
 uniform_x_uniform_h = 0
 uniform_x_uniform_h_sigma = 0
-uniform_x_normal_h = 0
+uniform_x_normal_h = 1
 uniform_x_normal_h_sigma = 0
-normal_x_normal_h = 0
+normal_x_normal_h = 1
 normal_x_normal_h_1 = 0
 normal_x_normal_h_sigma = 0
 
@@ -564,6 +565,29 @@ def plot_inte_n(ax,distribution,color,save_string):
     x,y,z,dx,dy,dz,trans,inte = read_slopes_HARS(f_path,columns_name)
     marker=['o','s','*','D','X','p','d','v','^','P','H','8']
     num_opts = np.unique(y)
+    predicted_intercepts = []
+    if distribution=="bxgh":
+        mu = List([0,5])
+        sigma = List([1,1])
+    else:
+        mu = List([0,0])
+        sigma = List([1,1])
+    step = 0.0001
+    prd = yn.Prediction()
+    
+    start = np.sum(mu)/len(mu) - 2*np.sum(sigma)-5
+    stop = np.sum(mu)/len(mu) + 2*np.sum(sigma)+5
+    dis_x = np.arange(start,stop,step)
+    if distribution=="uxgh":
+        distribution_fn = prd.uniform
+    else:
+        distribution_fn = prd.gaussian
+    pdf =  distribution_fn(dis_x,mu,sigma)
+    pdf = np.multiply(pdf,1/(np.sum(pdf)*step))
+    for n in num_opts:
+        _1 = prd.ICPDF(1-(1/n),mu,stop,step,dis_x,pdf)
+        predicted_intercepts.append(_1)
+
     mum = np.unique(x)
     xf = np.zeros(len(num_opts))
     yf = np.zeros(len(num_opts))
@@ -588,7 +612,7 @@ def plot_inte_n(ax,distribution,color,save_string):
     # ax.plot(xf,np.exp(np.array(xf)*np.array(xf)*np.array(xf)*exp_fit[0] + np.array(xf)*np.array(xf)*exp_fit[1] + np.array(xf)*exp_fit[2] + exp_fit[3]),linewidth=1,color = color)
     exp_fit = np.polyfit(1/np.array(xf),np.array(yf),3)
     ax.plot(xf,(1/(np.array(xf)*np.array(xf)*np.array(xf)))*exp_fit[0] + (1/(np.array(xf)*np.array(xf)))*exp_fit[1] + (1/(np.array(xf)))*exp_fit[2] + exp_fit[3],linewidth=2,color = color)
-    
+    # ax.plot(num_opts,predicted_intercepts,linewidth=3,color = color,linestyle="-.")
     # ax.set_ylim([-0.5, 1])
     return exp_fit
     
@@ -624,8 +648,8 @@ def plot_HARS(ax,distribution,color,save_string):
     log_fit = np.polyfit(np.log10(xf),yf,2)
     ax.plot(xf,(np.log10(xf)*np.log10(xf)*log_fit[0]+np.log10(xf)*log_fit[1]+log_fit[2]),linewidth=2,color = color)#,label=distribution+'['+r'$\bf %.2f \log_{10}^{2}{\mu_m} %+.2f \log_{10}{\mu_m} %+.2f$'%(np.round(log_fit[0],decimals=2),np.round(log_fit[1],decimals=2),np.round(log_fit[2],decimals=2))+']')
     
-    plt.xticks(fontsize=12,fontweight='bold')
-    plt.yticks(fontsize=12,fontweight='bold')
+    plt.xticks(fontsize=16,fontweight='bold')
+    plt.yticks(fontsize=16,fontweight='bold')
     ax.set_ylim([0, 1.05])
     return log_fit
 
@@ -704,12 +728,12 @@ def plot_HARS_n_err(ax,distribution,color,save_string,save_string1):
     exp_fit1 = np.polyfit(xf1,np.log(np.array(yf1)),2)
     # ax.plot(xf1,np.exp(np.array(xf1)*np.array(xf1)*exp_fit1[0]+np.array(xf1)*exp_fit1[1] + exp_fit1[2]),linewidth=2,color = color)#,label=distribution+'['+r'$\bf e^{%.2fn %+.2f}$'%(np.round(exp_fit[1],decimals=2),np.round(exp_fit[2],decimals=2))+']')
 
-    ax.plot(xf,np.exp(np.array(xf1)*np.array(xf1)*exp_fit1[0]+np.array(xf1)*exp_fit1[1] + exp_fit1[2]) - np.exp(np.array(xf)*np.array(xf)*exp_fit[0]+np.array(xf)*exp_fit[1] + exp_fit[2]),linewidth=2,color = color)#,label=distribution+'['+r'$\bf e^{%.2fn %+.2f}$'%(np.round(exp_fit[1],decimals=2),np.round(exp_fit[2],decimals=2))+']')
+    ax.plot(xf,np.exp(np.array(xf1)*np.array(xf1)*exp_fit1[0]+np.array(xf1)*exp_fit1[1] + exp_fit1[2]) - np.exp(np.array(xf)*np.array(xf)*exp_fit[0]+np.array(xf)*exp_fit[1] + exp_fit[2]),linewidth=5,color = color)#,label=distribution+'['+r'$\bf e^{%.2fn %+.2f}$'%(np.round(exp_fit[1],decimals=2),np.round(exp_fit[2],decimals=2))+']')
     
     # ax.text(20,min(trans),r'$e^{%.2fx^{2} + %.2fx + %.2f}$'%(np.round(linear_fit[0],decimals=2),np.round(linear_fit[1],decimals=2),np.round(linear_fit[2],decimals=2)))
 
-    plt.xticks(fontsize=12,fontweight='bold')
-    plt.yticks(fontsize=12,fontweight='bold')
+    plt.xticks(fontsize=16,fontweight='bold')
+    plt.yticks(fontsize=16,fontweight='bold')
     return exp_fit
 
 def plot_HARS_err(ax,distribution,color,save_string,save_string1):
@@ -770,9 +794,9 @@ def plot_HARS_err(ax,distribution,color,save_string,save_string1):
     # ax.plot(xf,np.exp(np.array(xf)*np.array(xf)*exp_fit[0]+np.array(xf)*exp_fit[1] + exp_fit[2]),linewidth=1,color = color,label=distribution+'['+r'$e^{%.2fx^{2} + %.2fx + %.2f}$'%(np.round(exp_fit[0],decimals=2),np.round(exp_fit[1],decimals=2),np.round(exp_fit[2],decimals=2))+']')
     # ax.text(400,min(trans),r'$e^{%.2fx^{2} + %.2fx + %.2f}$'%(np.round(linear_fit[0],decimals=2),np.round(linear_fit[1],decimals=2),np.round(linear_fit[2],decimals=2)))
     log_fit1 = np.polyfit(np.log10(xf1),yf1,2)
-    ax.plot(xf,(np.log10(xf1)*np.log10(xf1)*log_fit1[0]+np.log10(xf1)*log_fit1[1]+log_fit1[2])-(np.log10(xf)*np.log10(xf)*log_fit[0]+np.log10(xf)*log_fit[1]+log_fit[2]),linewidth=2,color = color)
-    plt.xticks(fontsize=12,fontweight='bold')
-    plt.yticks(fontsize=12,fontweight='bold')
+    ax.plot(xf,(np.log10(xf1)*np.log10(xf1)*log_fit1[0]+np.log10(xf1)*log_fit1[1]+log_fit1[2])-(np.log10(xf)*np.log10(xf)*log_fit[0]+np.log10(xf)*log_fit[1]+log_fit[2]),linewidth=5,color = color)
+    plt.xticks(fontsize=16,fontweight='bold')
+    plt.yticks(fontsize=16,fontweight='bold')
     return log_fit
 
 if WRC_normal==1:
@@ -1606,12 +1630,12 @@ if normal_x_normal_h_sigma==1:
         mum_slopes_gxgh.append(num_slopes)
 
 figures3d = 0
-initials1 = "mu_h=mu_x"
+# initials = "mu_h=mu_x"
+initials1 = "mu_h=mu_h_pred"
 initials = "mu_h=mu_h_pred"
-# initials = "mu_h=mu_h_pred"
 # initials = "sigma_h=sigma_x"
-ylab2 = r'$\bf \mu_h\;Vs\;\mu_x$'
-ylab1 = r'$\bf \sigma_h\;Vs\;\sigma_x$'
+ylab2 = r'$\bf \mu_h\;vs.\;\mu_q$'
+ylab1 = r'$\bf \sigma_h\;vs.\;\sigma_q$'
 bxgh_string = initials+'_bxgh_all_mum2'
 uxgh_string = initials+'_uxgh_all_mum2'
 gxgh_string = initials+'_gxgh_all_mum2'
@@ -1829,18 +1853,18 @@ def legend_func(func,bxgh_fit,uxgh_fit,gxgh_fit,func1,axes):
     colors = ['slateblue','lightseagreen','coral']
     point_leg = [plt.Rectangle((0, 0), 1, 1, fc=colors[i]) for i in range(len(colors))]
     labels = ['bxgh'+func(bxgh_fit),'uxgh'+func1(uxgh_fit),'gxgh'+func(gxgh_fit)]
-    dist_lab = [r'$K_xG_h$',r'$U_xG_h$',r'$G_xG_h$']
+    dist_lab = [r'$K_q$',r'$U_q$',r'$N_q$']
     point_leg1 = []
     labels1 = []
     num_opts = [2,3,4,5,8,10,15,20,30,40,80,100]
     for i in range(len(marker)):
         point_leg1.append(plt.scatter([],[], edgecolor='black',s=40,marker=marker[i], facecolor='white'))#,label=str(num_opts[i])+'_'+distribution))
-        labels1.append(str(num_opts[i])+' options')
-    # leg1 = plt.legend(point_leg,labels,loc='upper center', bbox_to_anchor=(0.5, 1.5),fontsize=12,prop=dict(weight='bold'),labelcolor=(0.3,0.3,0.3,1))
+        labels1.append(str(num_opts[i]))
+    leg1 = plt.legend(point_leg,labels,loc='upper center', bbox_to_anchor=(0.5, 1.7),prop=dict(weight='bold',size=16),labelcolor=(0,0,0,1))
+    leg3 = plt.legend(point_leg,dist_lab,loc='upper center', bbox_to_anchor=(0.5, 1.14),prop=dict(weight='bold',size=16),labelcolor=(0,0,0,1),ncol=3,columnspacing=5,frameon=False)
+    # leg1 = plt.legend(point_leg,labels,loc='upper center', bbox_to_anchor=(0.5, 1.7),fontsize=12,prop=dict(weight='bold'),labelcolor=(0.3,0.3,0.3,1))
     # leg3 = plt.legend(point_leg,dist_lab,loc='upper center', bbox_to_anchor=(0.5, 1.1),fontsize=12,prop=dict(weight='bold'),labelcolor=(0.3,0.3,0.3,1),ncol=3,columnspacing=3,frameon=False)
-    leg1 = plt.legend(point_leg,labels,loc='upper center', bbox_to_anchor=(0.5, 1.7),fontsize=12,prop=dict(weight='bold'),labelcolor=(0.3,0.3,0.3,1))
-    leg3 = plt.legend(point_leg,dist_lab,loc='upper center', bbox_to_anchor=(0.5, 1.1),fontsize=12,prop=dict(weight='bold'),labelcolor=(0.3,0.3,0.3,1),ncol=3,columnspacing=3,frameon=False)
-    leg2 = plt.legend(point_leg1,labels1,loc='upper left', bbox_to_anchor=(1, 1),fontsize=12,prop=dict(weight='bold'),labelcolor=(0.3,0.3,0.3,1),frameon=False)
+    leg2 = plt.legend(point_leg1,labels1,loc='upper left', title="Number of options "+r"$n$", bbox_to_anchor=(1, 1),fontsize=18,prop=dict(weight='bold'),labelcolor=(0,0,0,1),frameon=False)
     axes.add_artist(leg1)
     axes.add_artist(leg2)
     axes.add_artist(leg3)
@@ -1851,53 +1875,50 @@ def legend_func_mum(func,bxgh_fit,uxgh_fit,gxgh_fit,func1,axes):
     colors = ['slateblue','lightseagreen','coral']
     point_leg = [plt.Rectangle((0, 0), 1, 1, fc=colors[i]) for i in range(len(colors))]
     labels = ['bxgh'+func(bxgh_fit),'uxgh'+func1(uxgh_fit),'gxgh'+func(gxgh_fit)]
-    dist_lab = [r'$K_xG_h$',r'$U_xG_h$',r'$G_xG_h$']
+    dist_lab = [r'$K_q$',r'$U_q$',r'$N_q$']
     mum = [10,50,100,200,500]
     point_leg1 = []
     labels1 = []
     for i in range(len(mum)):
         point_leg1.append(plt.scatter([],[], edgecolor='black',s=40,marker=marker[i], facecolor='white'))#,label=str(num_opts[i])+'_'+distribution))
-        labels1.append(str(mum[i])+' agents')
-    # leg1 = plt.legend(point_leg,labels,loc='upper center', bbox_to_anchor=(0.5, 1.5),fontsize=12,prop=dict(weight='bold'),labelcolor=(0.3,0.3,0.3,1))
+        labels1.append(str(mum[i])+'$n$'+' agents')
+    leg1 = plt.legend(point_leg,labels,loc='upper center', bbox_to_anchor=(0.5, 1.7),prop=dict(weight='bold',size=16),labelcolor=(0,0,0,1))
+    leg3 = plt.legend(point_leg,dist_lab,loc='upper center', bbox_to_anchor=(0.5, 1.14),prop=dict(weight='bold',size=16),labelcolor=(0,0,0,1),ncol=3,columnspacing=5,frameon=False)
+    # leg1 = plt.legend(point_leg,labels,loc='upper center', bbox_to_anchor=(0.5, 1.7),fontsize=12,prop=dict(weight='bold'),labelcolor=(0.3,0.3,0.3,1))
     # leg3 = plt.legend(point_leg,dist_lab,loc='upper center', bbox_to_anchor=(0.5, 1.1),fontsize=12,prop=dict(weight='bold'),labelcolor=(0.3,0.3,0.3,1),ncol=3,columnspacing=3,frameon=False)
-    leg1 = plt.legend(point_leg,labels,loc='upper center', bbox_to_anchor=(0.5, 1.7),fontsize=12,prop=dict(weight='bold'),labelcolor=(0.3,0.3,0.3,1))
-    leg3 = plt.legend(point_leg,dist_lab,loc='upper center', bbox_to_anchor=(0.5, 1.1),fontsize=12,prop=dict(weight='bold'),labelcolor=(0.3,0.3,0.3,1),ncol=3,columnspacing=3,frameon=False)
-    leg2 = plt.legend(point_leg1,labels1,loc='upper left', bbox_to_anchor=(1, 1),fontsize=12,prop=dict(weight='bold'),labelcolor=(0.3,0.3,0.3,1),frameon=False)
+    leg2 = plt.legend(point_leg1,labels1,loc='upper left', title="Swarm size "+r"$S = m n$",bbox_to_anchor=(1, 1),fontsize=18,prop=dict(weight='bold'),labelcolor=(0,0,0,1),frameon=False)
     axes.add_artist(leg1)
     axes.add_artist(leg2)
     axes.add_artist(leg3)
 
 
 if slopes_HARS ==1:
-    # plt.style.use('ggplot')
-    fig, ax = plt.subplots()
-    bxgh_fit = plot_slopes(ax,'bxgh',color='slateblue',save_string=bxgh_string)
-    uxgh_fit = plot_slopes(ax,'uxgh',color='lightseagreen',save_string=uxgh_string)
-    gxgh_fit = plot_slopes(ax,'gxgh',color='coral',save_string=gxgh_string)
+    # fig, ax = plt.subplots()
+    # bxgh_fit = plot_slopes(ax,'bxgh',color='slateblue',save_string=bxgh_string)
+    # uxgh_fit = plot_slopes(ax,'uxgh',color='lightseagreen',save_string=uxgh_string)
+    # gxgh_fit = plot_slopes(ax,'gxgh',color='coral',save_string=gxgh_string)
 
-    function = lambda log_fit : ('['+r'$\bf %.2f \log_{10}^{2}{\mu_m} %+.2f \log_{10}{\mu_m} %+.2f$'%(np.round(log_fit[0],decimals=2),np.round(log_fit[1],decimals=2),np.round(log_fit[2],decimals=2))+']')
-    legend_func(function,bxgh_fit,uxgh_fit,gxgh_fit,function,ax)
+    # function = lambda log_fit : ('['+r'$\bf %.2f \log_{10}^{2}{\mu_m} %+.2f \log_{10}{\mu_m} %+.2f$'%(np.round(log_fit[0],decimals=2),np.round(log_fit[1],decimals=2),np.round(log_fit[2],decimals=2))+']')
+    # legend_func(function,bxgh_fit,uxgh_fit,gxgh_fit,function,ax)
 
-    plt.xlabel(r'$\bf \mu_m$',fontproperties)
-    plt.ylabel('Slope of best fit in '+ylab1,fontproperties)
-    plt.savefig(initials+"slope_mum.eps",bbox_inches="tight",pad_inches=0.2)
-    plt.show()
+    # plt.xlabel(r'$\bf \mu_m$',fontproperties)
+    # plt.ylabel('Slope of best fit in '+ylab1,fontproperties)
+    # plt.savefig(initials+"slope_mum.eps",bbox_inches="tight",pad_inches=0.2)
+    # plt.show()
 
-    # plt.style.use('ggplot')
-    fig, ax = plt.subplots()  
-    bxgh_fit = plot_inter(ax,'bxgh',color='slateblue',save_string=bxgh_string)
-    uxgh_fit = plot_inter(ax,'uxgh',color='lightseagreen',save_string=uxgh_string)
-    gxgh_fit = plot_inter(ax,'gxgh',color='coral',save_string=gxgh_string)
+    # fig, ax = plt.subplots()  
+    # bxgh_fit = plot_inter(ax,'bxgh',color='slateblue',save_string=bxgh_string)
+    # uxgh_fit = plot_inter(ax,'uxgh',color='lightseagreen',save_string=uxgh_string)
+    # gxgh_fit = plot_inter(ax,'gxgh',color='coral',save_string=gxgh_string)
 
-    function = lambda linear_fit : ('['+r'$\bf %.2f\mu_m %+.2f$'%(np.round(linear_fit[0],decimals=2),np.round(linear_fit[1],decimals=2))+']')
-    legend_func(function,bxgh_fit,uxgh_fit,gxgh_fit,function,ax)
+    # function = lambda linear_fit : ('['+r'$\bf %.2f\mu_m %+.2f$'%(np.round(linear_fit[0],decimals=2),np.round(linear_fit[1],decimals=2))+']')
+    # legend_func(function,bxgh_fit,uxgh_fit,gxgh_fit,function,ax)
     
-    plt.xlabel(r'$\bf \mu_m$',fontproperties)
-    plt.ylabel('Intercept of best fit in '+ylab1,fontproperties)
-    plt.savefig(initials+"Intercept_mum.eps",bbox_inches="tight",pad_inches=0.2)
-    plt.show()
+    # plt.xlabel(r'$\bf \mu_m$',fontproperties)
+    # plt.ylabel('Intercept of best fit in '+ylab1,fontproperties)
+    # plt.savefig(initials+"Intercept_mum.eps",bbox_inches="tight",pad_inches=0.2)
+    # plt.show()
 
-    # plt.style.use('ggplot')
     fig, ax = plt.subplots()
     bxgh_fit = plot_HARS(ax,'bxgh',color='slateblue',save_string=bxgh_string)
     uxgh_fit = plot_HARS(ax,'uxgh',color='lightseagreen',save_string=uxgh_string)
@@ -1906,81 +1927,86 @@ if slopes_HARS ==1:
     function = lambda log_fit : ('['+r'$\bf %.2f \log_{10}^{2}{\mu_m} %+.2f \log_{10}{\mu_m} %+.2f$'%(np.round(log_fit[0],decimals=2),np.round(log_fit[1],decimals=2),np.round(log_fit[2],decimals=2))+']')
     legend_func(function,bxgh_fit,uxgh_fit,gxgh_fit,function,ax)
 
-    plt.xlabel(r'$\bf \mu_m$',fontproperties)
-    plt.ylabel(r'$\mu_{HARS}$'+' of best fit in '+ylab1,fontproperties)
+    plt.xlabel("Mean sub-swarm size "+r'$\bf\mu_m$',fontproperties)
+    plt.ylabel(r'$\mu_{HARS}$'+' of HARS line in '+ylab1,fontproperties)
     plt.savefig(initials+"HARS_mum.eps",bbox_inches="tight",pad_inches=0.2)
     plt.show()
 
-    # plt.style.use('ggplot')
-    fig, ax = plt.subplots()
-    bxgh_fit = plot_inte_n(ax,'bxgh',color='slateblue',save_string=bxgh_string)
-    uxgh_fit = plot_inte_n(ax,'uxgh',color='lightseagreen',save_string=uxgh_string)
-    gxgh_fit = plot_inte_n(ax,'gxgh',color='coral',save_string=gxgh_string)
+    # fig, ax = plt.subplots()
+    # bxgh_fit = plot_inte_n(ax,'bxgh',color='slateblue',save_string=bxgh_string)
+    # uxgh_fit = plot_inte_n(ax,'uxgh',color='lightseagreen',save_string=uxgh_string)
+    # gxgh_fit = plot_inte_n(ax,'gxgh',color='coral',save_string=gxgh_string)
 
-    function = lambda exp_fit : ('['+r'$\bf %.2fn^{-3} %+.2fn^{-2} %+.2fn^{-1} %+.2f$'%(np.round(exp_fit[0],decimals=2),np.round(exp_fit[1],decimals=2),np.round(exp_fit[2],decimals=2),np.round(exp_fit[3],decimals=2))+']')
-    legend_func_mum(function,bxgh_fit,uxgh_fit,gxgh_fit,function,ax)
+    # function = lambda exp_fit : ('['+r'$\bf %.2fn^{-3} %+.2fn^{-2} %+.2fn^{-1} %+.2f$'%(np.round(exp_fit[0],decimals=2),np.round(exp_fit[1],decimals=2),np.round(exp_fit[2],decimals=2),np.round(exp_fit[3],decimals=2))+']')
+    # legend_func_mum(function,bxgh_fit,uxgh_fit,gxgh_fit,function,ax)
 
-    plt.xlabel('Number of options (n)',fontproperties)
-    plt.ylabel('Intercept of best fit in '+ylab1,fontproperties)
-    plt.savefig(initials+"Intercept_n.eps",bbox_inches="tight",pad_inches=0.2)
-    plt.show()
+    # # ax.text(38,0.1,s="(a)")
+    # ax.text(95,-0.34,s="(a)")
+    # plt.xlabel('Number of options (n)',fontproperties)
+    # plt.ylabel('y-intercept of\n HARS line in '+ylab1,fontproperties)
+    # plt.tight_layout()
+    # plt.savefig(initials+"Intercept_n.eps",bbox_inches="tight",pad_inches=0.2)
+    # plt.show()
 
-    # plt.style.use('ggplot')
-    fig, ax = plt.subplots()
-    bxgh_fit = plot_slopes_n(ax,'bxgh',color='slateblue',save_string=bxgh_string)
-    uxgh_fit = plot_slopes_n(ax,'uxgh',color='lightseagreen',save_string=uxgh_string)
-    gxgh_fit = plot_slopes_n(ax,'gxgh',color='coral',save_string=gxgh_string)
+    # fig, ax = plt.subplots()
+    # bxgh_fit = plot_slopes_n(ax,'bxgh',color='slateblue',save_string=bxgh_string)
+    # uxgh_fit = plot_slopes_n(ax,'uxgh',color='lightseagreen',save_string=uxgh_string)
+    # gxgh_fit = plot_slopes_n(ax,'gxgh',color='coral',save_string=gxgh_string)
 
-    # function = lambda log_fit : ('['+r'$\bf %.2f \log_{10}^{2}{n} %+.2f \log_{10}{n} %+.2f$'%(np.round(log_fit[0],decimals=2),np.round(log_fit[1],decimals=2),np.round(log_fit[2],decimals=2))+']')
-    # function1 = lambda exp_fit : ('['+r'$e^{%.2fn^{2} %+.2fn %+.2f}$'%(np.round(exp_fit[0],decimals=2),np.round(exp_fit[1],decimals=2),np.round(exp_fit[2],decimals=2))+']')
-    function = lambda log_fit : ('['+r'$\bf %.2f \log_{10}{n} %+.2f$'%(np.round(log_fit[0],decimals=2),np.round(log_fit[1],decimals=2))+']')
-    function1 = lambda exp_fit : ('['+r'$e^{%.2fn %+.2f}$'%(np.round(exp_fit[0],decimals=2),np.round(exp_fit[1],decimals=2))+']')
-    legend_func_mum(function,bxgh_fit,uxgh_fit,gxgh_fit,function1,ax)
+    # # function = lambda log_fit : ('['+r'$\bf %.2f \log_{10}^{2}{n} %+.2f \log_{10}{n} %+.2f$'%(np.round(log_fit[0],decimals=2),np.round(log_fit[1],decimals=2),np.round(log_fit[2],decimals=2))+']')
+    # # function1 = lambda exp_fit : ('['+r'$e^{%.2fn^{2} %+.2fn %+.2f}$'%(np.round(exp_fit[0],decimals=2),np.round(exp_fit[1],decimals=2),np.round(exp_fit[2],decimals=2))+']')
+    # function = lambda log_fit : ('['+r'$\bf %.2f \log_{10}{n} %+.2f$'%(np.round(log_fit[0],decimals=2),np.round(log_fit[1],decimals=2))+']')
+    # function1 = lambda exp_fit : ('['+r'$e^{%.2fn %+.2f}$'%(np.round(exp_fit[0],decimals=2),np.round(exp_fit[1],decimals=2))+']')
+    # legend_func_mum(function,bxgh_fit,uxgh_fit,gxgh_fit,function1,ax)
 
-    plt.xlabel('Number of options (n)',fontproperties)
-    plt.ylabel('Slope of best fit in '+ylab1,fontproperties)
-    plt.savefig(initials+"Slope_n.eps",bbox_inches="tight",pad_inches=0.2)
-    plt.show()
+    # # ax.text(38,0.9425,s="(b)")
+    # ax.text(95,0.51,s="(b)")
+    # plt.xlabel('Number of options (n)',fontproperties)
+    # plt.ylabel('Slope of\n HARS line in '+ylab1,fontproperties)
+    # plt.tight_layout()
+    # plt.savefig(initials+"Slope_n.eps",bbox_inches="tight",pad_inches=0.2)
+    # plt.show()
 
-    # plt.style.use('ggplot')
-    fig, ax = plt.subplots()
-    bxgh_fit = plot_HARS_n(ax,'bxgh',color='slateblue',save_string=bxgh_string)
-    uxgh_fit = plot_HARS_n(ax,'uxgh',color='lightseagreen',save_string=uxgh_string)
-    gxgh_fit = plot_HARS_n(ax,'gxgh',color='coral',save_string=gxgh_string)
+    # fig, ax = plt.subplots()
+    # bxgh_fit = plot_HARS_n(ax,'bxgh',color='slateblue',save_string=bxgh_string)
+    # uxgh_fit = plot_HARS_n(ax,'uxgh',color='lightseagreen',save_string=uxgh_string)
+    # gxgh_fit = plot_HARS_n(ax,'gxgh',color='coral',save_string=gxgh_string)
 
-    function = lambda exp_fit : ('['+r'$\bf e^{%.2fn %+.2f}$'%(np.round(exp_fit[1],decimals=2),np.round(exp_fit[2],decimals=2))+']')
-    legend_func_mum(function,bxgh_fit,uxgh_fit,gxgh_fit,function,ax)
+    # function = lambda exp_fit : ('['+r'$\bf e^{%.2fn %+.2f}$'%(np.round(exp_fit[1],decimals=2),np.round(exp_fit[2],decimals=2))+']')
+    # legend_func_mum(function,bxgh_fit,uxgh_fit,gxgh_fit,function,ax)
 
-    plt.xlabel('Number of options (n)',fontproperties)
-    plt.ylabel(r'$\mu_{HARS}$'+' of best fit in '+ylab1,fontproperties)
-    plt.savefig(initials+"HARS_n.eps",bbox_inches="tight",pad_inches=0.2)
-    plt.show()
+    # plt.xlabel('Number of options (n)',fontproperties)
+    # plt.ylabel(r'$\mu_{HARS}$'+' of best fit in '+ylab1,fontproperties)
+    # plt.savefig(initials+"HARS_n.eps",bbox_inches="tight",pad_inches=0.2)
+    # plt.show()
 
-    fig, ax = plt.subplots()
-    bxgh_fit = plot_HARS_n_err(ax,'bxgh',color='slateblue',save_string=bxgh_string,save_string1=bxgh_string1)
-    uxgh_fit = plot_HARS_n_err(ax,'uxgh',color='lightseagreen',save_string=uxgh_string,save_string1=uxgh_string1)
-    gxgh_fit = plot_HARS_n_err(ax,'gxgh',color='coral',save_string=gxgh_string,save_string1=gxgh_string1)
+    # fig, ax = plt.subplots()
+    # bxgh_fit = plot_HARS_n_err(ax,'bxgh',color='slateblue',save_string=bxgh_string,save_string1=bxgh_string1)
+    # uxgh_fit = plot_HARS_n_err(ax,'uxgh',color='lightseagreen',save_string=uxgh_string,save_string1=uxgh_string1)
+    # gxgh_fit = plot_HARS_n_err(ax,'gxgh',color='coral',save_string=gxgh_string,save_string1=gxgh_string1)
 
-    function = lambda exp_fit : ('['+r'$\bf e^{%.2fn %+.2f}$'%(np.round(exp_fit[1],decimals=2),np.round(exp_fit[2],decimals=2))+']')
-    legend_func_mum(function,bxgh_fit,uxgh_fit,gxgh_fit,function,ax)
+    # function = lambda exp_fit : ('['+r'$\bf e^{%.2fn %+.2f}$'%(np.round(exp_fit[1],decimals=2),np.round(exp_fit[2],decimals=2))+']')
+    # legend_func_mum(function,bxgh_fit,uxgh_fit,gxgh_fit,function,ax)
 
-    plt.xlabel('Number of options (n)',fontproperties)
-    plt.ylabel(r'$\Delta_{\mu_{HARS}}$'+' of best fit in '+ylab1,fontproperties)
-    plt.savefig(initials1+initials+"HARS_n_diff.eps",bbox_inches="tight",pad_inches=0.2)
-    plt.show()
+    # ax.text(2,0.22,s="(a)",fontsize=18,fontweight='bold')
+    # plt.xlabel('Number of options (n)',fontproperties)
+    # plt.ylabel(r'$\Delta_{\mu_{HARS}}$'+' of \n HARS line in '+ylab1,fontproperties)
+    # plt.savefig(initials1+initials+"HARS_n_diff.eps",bbox_inches="tight",pad_inches=0.2)
+    # plt.show()
 
-    fig, ax = plt.subplots()
-    bxgh_fit = plot_HARS_err(ax,'bxgh',color='slateblue',save_string=bxgh_string,save_string1=bxgh_string1)
-    uxgh_fit = plot_HARS_err(ax,'uxgh',color='lightseagreen',save_string=uxgh_string,save_string1=uxgh_string1)
-    gxgh_fit = plot_HARS_err(ax,'gxgh',color='coral',save_string=gxgh_string,save_string1=gxgh_string1)
+    # fig, ax = plt.subplots()
+    # bxgh_fit = plot_HARS_err(ax,'bxgh',color='slateblue',save_string=bxgh_string,save_string1=bxgh_string1)
+    # uxgh_fit = plot_HARS_err(ax,'uxgh',color='lightseagreen',save_string=uxgh_string,save_string1=uxgh_string1)
+    # gxgh_fit = plot_HARS_err(ax,'gxgh',color='coral',save_string=gxgh_string,save_string1=gxgh_string1)
 
-    function = lambda log_fit : ('['+r'$\bf %.2f \log_{10}^{2}{\mu_m} %+.2f \log_{10}{\mu_m} %+.2f$'%(np.round(log_fit[0],decimals=2),np.round(log_fit[1],decimals=2),np.round(log_fit[2],decimals=2))+']')
-    legend_func(function,bxgh_fit,uxgh_fit,gxgh_fit,function,ax)
+    # function = lambda log_fit : ('['+r'$\bf %.2f \log_{10}^{2}{\mu_m} %+.2f \log_{10}{\mu_m} %+.2f$'%(np.round(log_fit[0],decimals=2),np.round(log_fit[1],decimals=2),np.round(log_fit[2],decimals=2))+']')
+    # legend_func(function,bxgh_fit,uxgh_fit,gxgh_fit,function,ax)
 
-    plt.xlabel(r'$\bf \mu_m$',fontproperties)
-    plt.ylabel(r'$\Delta_{\mu_{HARS}}$'+' of best fit in '+ylab1,fontproperties)
-    plt.savefig(initials1+initials+"HARS_mum_err.eps",bbox_inches="tight",pad_inches=0.2)
-    plt.show()
+    # ax.text(460,0.192,s="(b)",fontsize=18,fontweight='bold')
+    # plt.xlabel("Mean sub-swarm size "+r'$\bf\mu_m$',fontproperties)
+    # plt.ylabel(r'$\Delta_{\mu_{HARS}}$'+' of \n HARS line in '+ylab1,fontproperties)
+    # plt.savefig(initials1+initials+"HARS_mum_err.eps",bbox_inches="tight",pad_inches=0.2)
+    # plt.show()
 
 def align_yaxis(ax1, v1, ax2, v2):
     """adjust ax2 ylimit so that v2 in ax2 is aligned to v1 in ax1"""
@@ -1992,22 +2018,22 @@ def align_yaxis(ax1, v1, ax2, v2):
     miny, maxy = ax2.get_ylim()
     ax2.set_ylim(miny+dy, maxy+dy)
 
-visua = 1
+visua = 0
 prd = yn.Prediction()
-font = {"fontsize":18,"fontweight":'bold'}
-from matplotlib import rc,rcParams
-rc('font', weight='bold',size=18)
-rcParams['text.latex.preamble'] = [r'\usepackage{sfmath} \boldmath']
+# font = {"fontsize":18,"fontweight":'bold'}
+# from matplotlib import rc,rcParams
+# rc('font', weight='bold',size=18)
+# rcParams['text.latex.preamble'] = [r'\usepackage{sfmath} \boldmath']
 
 if visua == 1:
     step = 0.0001
     
     number_of_options = [30]
-    plt.style.use('ggplot')
+    # plt.style.use('ggplot')
     fig,axs = plt.subplots()
 
     # fig.tight_layout(pad=0.5)
-    dist = prd.gaussian
+    dist = prd.uniform
     # delta_mu = 4
     mu_x = List([10])
     sigma_x = List([1])
@@ -2024,7 +2050,7 @@ if visua == 1:
     
     for nop in range(len(number_of_options)):
         mean_esmes2m = prd.ICPDF(1-(1/number_of_options[nop]),mu_x,stop1,step,dis_x,pdf_x)
-        axs.axvline(mean_esmes2m,0,500,color='red',label = r'$\bf \mu_{ESM,ES2M}$',linewidth = 0.5)
+        axs.axvline(mean_esmes2m,0,500,color='red',label = r'$\bf \mu^*_h$',linewidth = 5)
 
         mu_h = List([mean_esmes2m])
         # mu_h = mu_x
@@ -2033,9 +2059,9 @@ if visua == 1:
         sig = prd.ICPDF((1-(1/(number_of_options[nop]**2))),mu_x,stop1,step,dis_x,pdf_x) - mean_esmes2m
         
         
-        axs.axvline(mean_esmes2m+sigma_h[0],0,500,color='brown',label = r'$\bf \sigma_{h-fit}$',linewidth = 0.5)
-        axs.axvline(mean_esmes2m-sigma_h[0],0,500,color='brown',label = r'$\bf \sigma_{h-fit}$',linewidth = 0.5)
-        axs.axvline(mean_esmes2m+sig,0,500,color='green',label = r'$\bf \sigma_{h-pred}$',linewidth = 0.5)
+        # axs.axvline(mean_esmes2m+sigma_h[0],0,500,color='brown',label = r'$\bf \sigma_{h-fit}$',linewidth = 0.5)
+        # axs.axvline(mean_esmes2m-sigma_h[0],0,500,color='brown',label = r'$\bf \sigma_{h-fit}$',linewidth = 0.5)
+        # axs.axvline(mean_esmes2m+sig,0,500,color='green',label = r'$\bf \sigma_{h-pred}$',linewidth = 0.5)
 
         start = np.sum(mu_h)/len(mu_h) - np.sum(sigma_h)-5
         stop = np.sum(mu_h)/len(mu_h) + np.sum(sigma_h)+5
@@ -2046,7 +2072,7 @@ if visua == 1:
         pdf_h = np.multiply(pdf,1/area)
 
         axs.invert_yaxis()
-        axs.plot(dis_x,pdf_x,color='black')
+        axs.plot(dis_x,pdf_x,color='green',label=r'$\bf U_q$',linewidth=5)
         
         
 
@@ -2064,46 +2090,48 @@ if visua == 1:
         color = ["#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)])
                     for i in range(number_of_colors)]
 
-        for i in range(len(slices)+1):
-            if i!=0 and i!=len(slices):
-                x1 = np.arange(slices[i-1],slices[i],0.0001)
-                pdf1 =  dist(x1,mu_x,sigma_x)
-                pdf1 = np.multiply(pdf1,1/area)
-                axs.fill_between(x1,0,pdf1,facecolor=color[i])
-            elif i==0:
-                x1 = np.arange(start,slices[i],0.0001)
-                pdf1 =  dist(x1,mu_x,sigma_x)
-                pdf1 = np.multiply(pdf1,1/area)
-                axs.fill_between(x1,0,pdf1,facecolor=color[i])
-            elif i==len(slices):
-                x1 = np.arange(slices[-1],stop,0.0001)
-                pdf1 =  dist(x1,mu_x,sigma_x)
-                pdf1 = np.multiply(pdf1,1/area)
-                axs.fill_between(x1,0,pdf1,facecolor=color[i])
+        # for i in range(len(slices)+1):
+        #     if i!=0 and i!=len(slices):
+        #         x1 = np.arange(slices[i-1],slices[i],0.0001)
+        #         pdf1 =  dist(x1,mu_x,sigma_x)
+        #         pdf1 = np.multiply(pdf1,1/area)
+        #         axs.fill_between(x1,0,pdf1,facecolor=color[i])
+        #     elif i==0:
+        #         x1 = np.arange(start,slices[i],0.0001)
+        #         pdf1 =  dist(x1,mu_x,sigma_x)
+        #         pdf1 = np.multiply(pdf1,1/area)
+        #         axs.fill_between(x1,0,pdf1,facecolor=color[i])
+        #     elif i==len(slices):
+        #         x1 = np.arange(slices[-1],stop,0.0001)
+        #         pdf1 =  dist(x1,mu_x,sigma_x)
+        #         pdf1 = np.multiply(pdf1,1/area)
+        #         axs.fill_between(x1,0,pdf1,facecolor=color[i])
 
         for i in range(3):
-            # ref_qual,options_quality = rng.quality(distribution=rng.dx_u,mu_x=low,sigma_x=high,number_of_options=number_of_options[nop])
-            ref_qual,options_quality = rng.quality(distribution=rng.dx_n,mu_x=mu_x,sigma_x=sigma_x,number_of_options=number_of_options[nop])
-            axs.axhline((0.3-i*0.1),0,500,color='black',linewidth = 0.5,alpha=0.25)
-            axs.scatter(options_quality,(0.3-i*0.1)*np.ones_like(options_quality),s=3,edgecolor = 'black')
-            axs.text(start1+2,(0.3-i*0.1)-0.01,'trial '+str(i),font,color=(0.3,0.3,0.3,1))
-            axs.text(start1+2,0.03,r'$\bf \mu_x$',font,color=(0.3,0.3,0.3,1))
+            ref_qual,options_quality = rng.quality(distribution=rng.dx_u,mu_x=low,sigma_x=high,number_of_options=number_of_options[nop])
+            # ref_qual,options_quality = rng.quality(distribution=rng.dx_n,mu_x=mu_x,sigma_x=sigma_x,number_of_options=number_of_options[nop])
+            # axs.axhline((0.3-i*0.1),0,500,color='black',linewidth = 0.5,alpha=0.25)
+            # axs.scatter(options_quality,(0.3-i*0.1)*np.ones_like(options_quality),s=3,edgecolor = 'black')
+            # axs.text(start1+2,(0.3-i*0.1)-0.01,'trial '+str(i),font,color=(0.3,0.3,0.3,1))
+            # axs.text(start1+2,0.05,r'$\bf N_q$',font,color=(0.3,0.3,0.3,1))
             
         axs1 = axs.twinx()
-        axs1.plot(dis_h,pdf_h,color='maroon')
+        axs1.plot(dis_h,pdf_h,color='indigo',label=r'$\bf N_h$',linewidth=5)
         for i in range(3):
             units = rng.threshold_n(m_units=number_of_options[nop]*100,mu_h=mu_h,sigma_h=sigma_h)
-            axs1.axhline((0.3-i*0.1),0,500,color='black',linewidth = 0.5,alpha=0.25)
-            axs1.scatter(units,(0.3-i*0.1)*np.ones_like(units),s=1,edgecolor = 'black')
-            axs1.text(start1+2,(0.3-i*0.1)+0.01,'trial '+str(i),font,color=(0.3,0.3,0.3,1))
-            axs.text(start1+2,-0.01,r'$\bf \mu_h$',font,color=(0.3,0.3,0.3,1))
+            # axs1.axhline((0.3-i*0.1),0,500,color='black',linewidth = 0.5,alpha=0.25)
+            # axs1.scatter(units,(0.3-i*0.1)*np.ones_like(units),s=1,edgecolor = 'black')
+            # axs1.text(start1+2,(0.3-i*0.1)+0.01,'trial '+str(i),font,color=(0.3,0.3,0.3,1))
+            # axs.text(start1+2,-0.03,r'$\bf N_h$',font,color=(0.3,0.3,0.3,1))
         
-        axs.legend(loc='upper right',prop=dict(weight='bold',size=18),labelcolor=(0.3,0.3,0.3,1))
-
-        axs.title.set_text("Number of samples drawn = "+str(number_of_options[nop]))
-        axs.title.set_fontweight('bold')
-        axs.title.set_fontsize(18)
-        axs.title.set_color("dimgray")
+        axs.legend(loc='upper left',prop=dict(weight='bold',size=20),labelcolor=(0.3,0.3,0.3,1),frameon = False)
+        axs1.legend(loc='center left',bbox_to_anchor=(0, 0.65),prop=dict(weight='bold',size=20),labelcolor=(0.3,0.3,0.3,1),frameon = False)
+        # axs.set_aspect('equal')
+        # axs1.set_aspect('equal')
+        # axs.title.set_text("Number of samples drawn = "+str(number_of_options[nop]))
+        # axs.title.set_fontweight('bold')
+        # axs.title.set_fontsize(18)
+        # axs.title.set_color("dimgray")
         align_yaxis(axs1,0.0,axs,0.0)
         axs.set_yticks([])
         axs1.set_yticks([])

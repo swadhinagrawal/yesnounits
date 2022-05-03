@@ -12,6 +12,11 @@ def file_reader(f):
 	op = pd.read_csv(path+f)
 	pass
 
+def smooth(y, box_pts):
+    box = np.ones(box_pts)/box_pts
+    y_smooth = np.convolve(y, box, mode='same')
+    return y_smooth
+
 def align_yaxis(ax1, v1, ax2, v2):
     """adjust ax2 ylimit so that v2 in ax2 is aligned to v1 in ax1"""
     _, y1 = ax1.transData.transform((0, v1))
@@ -27,10 +32,11 @@ if __name__=="__main__":
 	path = os.getcwd() + "/results/"
 	run_no = 4
 	file_identifier = np.sort(np.array([f for f in os.listdir(path) if '.' not in f]))
+	print(file_identifier)
 	params = pd.read_csv(path+file_identifier[run_no]+'.csv')
 	data_files = np.sort(np.array([f for f in os.listdir(path) if '.csv' in f and f[:len(file_identifier[run_no])] == file_identifier[run_no] and len(f)>10 and f[1]=='_']))
 
-	CDM_data_file = np.sort(np.array([f for f in os.listdir(path) if '.csv' in f and f[:3] == file_identifier[-1] and len(f)>10]))[0]
+	CDM_data_file = np.sort(np.array([f for f in os.listdir(path) if '.csv' in f and f[:3] == '158' and len(f)>10]))[0]
 	cdm_data = pd.read_csv(path+CDM_data_file)
 	cdm_succ_rate = []
 	for i in range(len(cdm_data["$\mu_{x_1}$"])):
@@ -125,6 +131,10 @@ if __name__=="__main__":
 	axs1.axvline(mu_h_pred,0,500,color='red',linewidth = 0.5)
 	axs1.plot(muh,succ_rate)
 	axs1.plot([0]+muh,cdm_succ_rate[:-1],c="green")
+	smoothened = smooth(cdm_succ_rate[:-1],20)
+
+	axs1.plot([0]+muh,smoothened,c='red')
+
 	align_yaxis(axs1,0.00,ax,0.00)
 	plt.xlabel("$\mu_{h}$",fontsize = 18)
 	plt.ylabel("Average rate of success",fontsize = 18)
@@ -135,5 +145,5 @@ if __name__=="__main__":
 	# plt.minorticks_on()
 	# plt.grid(b=True, which='minor', color='black', linestyle='-',linewidth = 0.2,alpha=0.1)
 
-	plt.savefig(path+"5_overlapped_plot.png",format = "png",bbox_inches="tight",pad_inches=0.2)
+	plt.savefig(path+"6_overlapped_plot.png",format = "png",bbox_inches="tight",pad_inches=0.2)
 	plt.show()

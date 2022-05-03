@@ -22,7 +22,10 @@ import random
 #from ray.util.multiprocessing import Pool
 
 #ray.init(address='auto', _redis_password='5241590000000000')
-path = os.getcwd() + "/results/"
+# path = os.getcwd() + "/results_sigma/"
+# path = os.getcwd() + "/mu_h=mu_x_s_h_vs_s_q/"
+# path = os.getcwd() + "/sigma_sigma/"
+path = os.getcwd() + "/F7/"
 
 WRC_normal = 0
 pval_WRC_normal = 0
@@ -37,6 +40,9 @@ uniform_x_normal_h_sigma = 1
 normal_x_normal_h = 0
 normal_x_normal_h_1 = 0
 normal_x_normal_h_sigma = 1
+normal_x_normal_h_vary_sig = 0
+bimodal_x_normal_h_vary_sig = 0
+uniform_x_normal_h_vary_sig = 0
 
 wf = yn.workFlow()
 vis = yn.Visualization()
@@ -493,7 +499,7 @@ if pval_WRC_uniform_x_gaussian_h ==1:
 if bimodal_x_normal_h==1:
     continuation = False
     mum = [10,50,100,200,500]
-    number_of_opts = [8,15,30,40]
+    number_of_opts = [2,5,8,10,15,20,30,40,80,100]
     cnt = 125
     mum_slopes_bxgh = []
     for i in mum:
@@ -505,15 +511,15 @@ if bimodal_x_normal_h==1:
         sigma_h_2 = 1
         sigma_x_1=sigma_h_1
         sigma_x_2=sigma_h_1
-        runs = 500
+        runs = 100
         batch_size = 50
         delta_mu = 5
-        mu_x = [np.round(i*0.1,decimals=1) for i in range(151)]
+        mu_x = [np.round(1+i,decimals=1) for i in range(4)]
         mu_h = [np.round(i*0.1,decimals=1) for i in range(151)]
         num_slopes_bxgh = []
         for nop in number_of_opts:
             number_of_options = nop
-            save_string = 'bxgh_sx=_sh_mu_h_vs_mu_x1_mu_x2_delta_mu_vs_RCD_nop_'+str(nop) # str(cnt)+
+            save_string = 'bxgh_mu_h_vs_mu_x_nop_'+str(nop) # str(cnt)+
             save_string,param = save_data(save_string,continuation)
             if isinstance(param,type(None))==False:
                 param.write("mu_m_1 : "+str(mu_m_1)+"\n")
@@ -533,21 +539,96 @@ if bimodal_x_normal_h==1:
                 muh1 = muh
                 muh2 = muh
                 count = 0
+                vote_vault = []
                 for k in range(runs):
-                    success,incrt,incrt_w_n,yes_test,max_rat_pval,pval_mat = wf.multi_run(distribution_m=rng.units_n,distribution_x=rng.dx_n,distribution_h=rng.threshold_n,\
+                    success,incrt,incrt_w_n,yes_test,max_rat_pval,pval_mat,votes = wf.multi_run(distribution_m=rng.units_n,distribution_x=rng.dx_n,distribution_h=rng.threshold_n,\
                         mu_h=List([muh1,muh2]),sigma_h=List([sigma_h_1,sigma_h_2]),mu_x=List([mux1,mux2]),sigma_x=List([sigma_x_1,sigma_x_2]),err_type=0,number_of_options=number_of_options,\
                         mu_m=List([mu_m_1,mu_m_2]),sigma_m=List([sigma_m_1,sigma_m_2]))
                     if success == 1:
                         count += 1
+                    vote_vault.append(votes)
                 mu_va = {'$\mu_{h_1}$':muh1,'$\mu_{h_2}$':muh2,'$\mu_{x_1}$': mux1,'$\mu_{x_2}$': mux2,"success_rate":count/runs}
+                for i in range(runs):
+                    for j in range(number_of_options):
+                        mu_va[str((i,j))] = vote_vault[i][j]
                 return mu_va
 
-            parallel(mux1muh1,mu_h,mu_x,columns_name=['$\mu_{h_1}$','$\mu_{h_2}$','$\mu_{x_1}$','$\mu_{x_2}$',"success_rate"],save_string=save_string,batch_size=3*len(mu_h),continuation=continuation)
-            continuation = False
+            parallel(mux1muh1,mu_h,mu_x,columns_name=['$\mu_{h_1}$','$\mu_{h_2}$','$\mu_{x_1}$','$\mu_{x_2}$',"success_rate"]+ [str((i,j)) for i in range(runs) for j in range(number_of_options)],save_string=save_string,batch_size=3*len(mu_h),continuation=continuation)
+            # continuation = False
             # [slope,intercept,hars] = vis.data_visualize(file_name=save_string+".csv",save_plot=save_string,x_var_='$\mu_{x_1}$',y_var_='$\mu_{h_1}$',cbar_orien="vertical",num_of_opts=nop,line_labels=number_of_options,z_var_='success_rate',plot_type='graphics',sigma_x_1=sigma_x_1,delta_mu=delta_mu,sigma_x_2=sigma_x_2,gaussian=1,uniform=0,mu_m=mu_m_1)
 
-            message = str(nop)+' number of options simulation finished'
-            pushbullet_message('Python Code','Results out! '+message)
+            # message = str(nop)+' number of options simulation finished'
+            # pushbullet_message('Python Code','Results out! '+message)
+            cnt += 1
+
+if bimodal_x_normal_h_vary_sig==1:
+    continuation = False
+    mum = [10,50,100,200,500]
+    cnt = 145
+    number_of_opts = 5
+    sig_q = [np.round(i,decimals=1) for i in range(15)]
+    for i in mum:
+        mu_m_1=i
+        sigma_m_1=0
+        mu_m_2=i
+        sigma_m_2=0
+        
+        # sigma_h_1=1
+        # sigma_h_2=1
+        # sigma_x_1 = 3*sigma_h_1
+        # sigma_x_2= 3*sigma_h_1
+        sigma_h_1 = 3
+        sigma_h_2 = 3
+        runs = 100
+        batch_size = 50
+        delta_mu = 5
+        mu_x = [np.round(1+i,decimals=1) for i in range(4)]
+        mu_h = [np.round(i*0.1,decimals=1) for i in range(151)]
+        
+        for sig in sig_q:
+            sigma_x_1 = sig
+            sigma_x_2 = sig
+
+            save_string =  'bxgh_mu_h_vs_mu_x_sig_q_'+str(sig)#'gxgh_sx=sh_mu_h_vs_mu_x_vs_RCD_nop_'+str(nop) # str(cnt)+
+            save_string,param = save_data(save_string,continuation)
+            if isinstance(param,type(None))==False:
+                param.write("mu_m_1 : "+str(mu_m_1)+"\n")
+                param.write("mu_m_2 : "+str(mu_m_2)+"\n")
+                param.write("sigma_x_1 : "+str(sigma_x_1)+"\n")
+                param.write("sigma_x_2 : "+str(sigma_x_2)+"\n")
+                param.write("sigma_h_1 : "+str(sigma_h_1)+"\n")
+                param.write("sigma_h_2 : "+str(sigma_h_2)+"\n")
+                param.write("sigma_m_1 : "+str(sigma_m_1)+"\n")
+                param.write("sigma_m_2 : "+str(sigma_m_2)+"\n")
+                param.write("nop : "+str(number_of_opts)+"\n")
+                param.write("delta_mu : "+str(delta_mu)+"\n")
+
+            def mux1muh1(muh,mux,avg_pval = 0):
+                # avg_incrtness_w_n = np.zeros((number_of_options,5*number_of_options))
+                mux1 = mux
+                mux2 = delta_mu + mux
+                muh1 = muh
+                muh2 = muh
+                count = 0
+                for k in range(runs):
+                    success,incrt,incrt_w_n,yes_test,max_rat_pval,pval_mat = wf.multi_run(distribution_m=rng.units_n,distribution_x=rng.dx_n,distribution_h=rng.threshold_n,\
+                        mu_h=List([muh1,muh2]),sigma_h=List([sigma_h_1,sigma_h_2]),mu_x=List([mux1,mux2]),sigma_x=List([sigma_x_1,sigma_x_2]),err_type=0,number_of_options=number_of_opts,\
+                        mu_m=List([mu_m_1,mu_m_2]),sigma_m=List([sigma_m_1,sigma_m_2]))
+                    if success == 1:
+                        count += 1
+
+                mu_va = {'$\mu_{h_1}$':muh1,'$\mu_{h_2}$':muh2,'$\mu_{x_1}$': mux1,'$\mu_{x_2}$': mux2,"success_rate":count/runs}#{'$\mu_{h_1}$':muh1,'$\mu_{h_2}$':muh2,'$\mu_{x_1}$': mux1,'$\mu_{x_2}$': mux2,"success_rate":count/runs,'Average p-value':avg_pval/runs,'Wrong_ranking_cost_without_no_proportion':avg_incrtness_w_n/runs}
+                return mu_va
+
+            parallel(mux1muh1,mu_h,mu_x,columns_name=['$\mu_{h_1}$','$\mu_{h_2}$','$\mu_{x_1}$','$\mu_{x_2}$',"success_rate",'Average p-value','Wrong_ranking_cost_without_no_proportion'],save_string=save_string,batch_size=3*len(mu_h))
+
+            # [slope,intercept,hars] = vis.data_visualize(file_name=save_string+".csv",save_plot=save_string,x_var_='$\mu_{x_1}$',y_var_='$\mu_{h_1}$',cbar_orien="vertical",num_of_opts=nop,line_labels=number_of_options,z_var_='success_rate',plot_type='graphics',sigma_x_1=sigma_x_1,delta_mu=delta_mu,sigma_x_2=sigma_x_2,mu_m=mu_m_1)
+
+            # vis.data_visualize(file_name=save_string+".csv",save_plot=save_string+'Pval',x_var_='$\mu_{x_1}$',y_var_='Average p-value',num_of_opts=number_of_opts,plot_type='line')
+            # vis.data_visualize(file_name=save_string+".csv",save_plot=save_string+'WRC',x_var_='$\mu_{x_1}$',y_var_='Wrong_ranking_cost_without_no_proportion',num_of_opts=number_of_opts,plot_type='line')
+
+            # message = str(nop)+' number of options simulation finished'
+            # pushbullet_message('Python Code','Results out! '+message)
             cnt += 1
 
 if bimodal_x_normal_h_sigma==1:
@@ -555,30 +636,31 @@ if bimodal_x_normal_h_sigma==1:
     mum_bxgh = [10,50,100,200,500]
     file_num = 65
     mum_slopes_bxgh = []
-    number_of_opts_bxgh = [80,100]
+    number_of_opts_bxgh = [2,5,8,10,15,20,30,40,80,100]
     for i in mum_bxgh:
         mu_m_1 = i
         sigma_m_1 = 0
         mu_m_2 = i
         sigma_m_2 = 0
 
-        runs = 500
+        runs = 100
         batch_size = 10
         delta_sigma = 0
         delta_mu = 5
-        mu_x_1 = 5
-        mu_x_2 = 5 + delta_mu
+        mu_x_1 = 2.5
+        mu_x_2 = 2.5 + delta_mu
         # mu_h_1 = (mu_x_1+mu_x_2)/2
         # mu_h_2 = mu_h_1
         mu_x = List([mu_x_1,mu_x_2])
-        sigma_x = [np.round(0.1+i*0.1,decimals=1) for i in range(151)]
-        sigma_h = [np.round(0.1+i*0.1,decimals=1) for i in range(151)]
+        sigma_x = [2]#[np.round(0.1+i*0.1,decimals=1) for i in range(151)]
+        # sigma_h = [2]#[np.round(0.1+i*0.1,decimals=1) for i in range(151)]
         
         step = 0.0001
         num_slopes = []
         for nop in number_of_opts_bxgh:
+            sigma_h = [(0.05*np.log10(nop)+0.58)*sigma_x[0]]#[np.round(0.1+i*0.1,decimals=1) for i in range(151)]
             number_of_options = nop
-            save_string = 'bxgh_mx_mh_sigma_h_vs_sigma_x1_sigma_x2_vs_RCD_nop_'+str(nop) # str(file_num)+
+            save_string = 'D_h*_bxgh_sigma_h_vs_sigma_x_nop_'+str(nop)#'bxgh_mx_mh_sigma_h_vs_sigma_x1_sigma_x2_vs_RCD_nop_'+str(nop) # str(file_num)+
             save_string,param = save_data(save_string,continuation)
 
             if isinstance(param,type(None))==False:
@@ -589,6 +671,10 @@ if bimodal_x_normal_h_sigma==1:
                 param.write("sigma_m_1 : "+str(sigma_m_1)+"\n")
                 param.write("sigma_m_2 : "+str(sigma_m_2)+"\n")
                 param.write("nop : "+str(number_of_options)+"\n")
+                param.write("sigma_h_1 : "+str(sigma_h[0])+"\n")
+                param.write("sigma_h_2 : "+str(sigma_h[0])+"\n")
+                param.write("sigma_x_1 : "+str(sigma_x[0])+"\n")
+                param.write("sigma_x_2 : "+str(sigma_x[0])+"\n")
                 # param.write("mu_h_1 : "+str(mu_h_1)+"\n")
                 # param.write("mu_h_2 : "+str(mu_h_2)+"\n")
 
@@ -600,16 +686,21 @@ if bimodal_x_normal_h_sigma==1:
                 sigma_h_2 = sigma_h
                 
                 count = 0
+                vote_vault = []
                 for k in range(runs):
-                    success,incrt,incrt_w_n,yes_test,max_rat_pval,pval_mat = wf.multi_run(distribution_m=rng.units_n,distribution_x=rng.dx_n,distribution_h=rng.threshold_n,\
+                    success,incrt,incrt_w_n,yes_test,max_rat_pval,pval_mat,votes = wf.multi_run(distribution_m=rng.units_n,distribution_x=rng.dx_n,distribution_h=rng.threshold_n,\
                         mu_h=[mu_h_1,mu_h_2],sigma_h=[sigma_h_1,sigma_h_2],mu_x=[mu_x_1,mu_x_2],sigma_x=[sigma_x_1,sigma_x_2],err_type=0,number_of_options=number_of_options,\
                         mu_m=[mu_m_1,mu_m_2],sigma_m=[sigma_m_1,sigma_m_2])
                     if success == 1:
                         count += 1
+                    vote_vault.append(votes)
                 mu_va = {'$\sigma_{h_1}$':sigma_h_1,'$\sigma_{h_2}$':sigma_h_2,'$\sigma_{x_1}$': sigma_x_1,'$\sigma_{x_2}$': sigma_x_2,"success_rate":count/runs}
+                for i in range(runs):
+                    for j in range(number_of_options):
+                        mu_va[str((i,j))] = vote_vault[i][j]
                 return mu_va
 
-            parallel(sigx1sigh1,sigma_h,sigma_x,columns_name=['$\sigma_{h_1}$','$\sigma_{h_2}$','$\sigma_{x_1}$','$\sigma_{x_2}$',"success_rate"],save_string=save_string,batch_size=3*len(sigma_h),continuation=continuation,do=True,mu_x=mu_x,n=number_of_options)
+            parallel(sigx1sigh1,sigma_h,sigma_x,columns_name=['$\sigma_{h_1}$','$\sigma_{h_2}$','$\sigma_{x_1}$','$\sigma_{x_2}$',"success_rate"]+ [str((i,j)) for i in range(runs) for j in range(number_of_options)],save_string=save_string,batch_size=3*len(sigma_h),continuation=continuation,do=True,mu_x=mu_x,n=number_of_options)
             # continuation=False
             # step = 0.0001
             # prd = yn.Prediction()
@@ -736,7 +827,7 @@ if uniform_x_normal_h==1:
     continuation = False
     cnt = 173
     mum = [10,50,100,200,500]
-    number_of_opts = [8,15,30,40]
+    number_of_opts = [2,5,8,10,15,20,30,40,80,100]
     for i in mum:
         mu_m_1=i
         sigma_m_1=0
@@ -748,15 +839,15 @@ if uniform_x_normal_h==1:
         sigma_x_2=sigma_h_1
         low_x_1 = -np.sqrt(3)*sigma_x_1                         #   Lower bound of distribution from which quality stimulus are sampled randomly
         high_x_1 = np.sqrt(3)*sigma_x_1                         #   Upper bound of distribution from which quality stimulus are sampled randomly
-        runs = 500
+        runs = 100
         batch_size = 50
         delta_mu = 0
-        mu_x = [np.round(i*0.1,decimals=1) for i in range(151)]
+        mu_x = [np.round(1+i,decimals=1) for i in range(4)]
         mu_h = [np.round(i*0.1,decimals=1) for i in range(151)]
         
         for nop in number_of_opts:
             number_of_options = nop
-            save_string = 'uxgh_sx=sh_mu_h_vs_mu_x_vs_RCD_nop_'+str(nop)#str(cnt)+
+            save_string = 'uxgh_mu_h_vs_mu_x_nop_'+str(nop)#str(cnt)+
             save_string,param = save_data(save_string,continuation)
             if isinstance(param,type(None))==False:
                 param.write("mu_m_1 : "+str(mu_m_1)+"\n")
@@ -776,27 +867,108 @@ if uniform_x_normal_h==1:
                 muh1 = muh
                 muh2 = muh
                 count = 0
+                vote_vault = []
                 for k in range(runs):
-                    success,incrt,incrt_w_n,yes_test,max_rat_pval,pval_mat = wf.multi_run(distribution_m=rng.units_n,distribution_x=rng.dx_u,distribution_h=rng.threshold_n,\
+                    success,incrt,incrt_w_n,yes_test,max_rat_pval,pval_mat,votes = wf.multi_run(distribution_m=rng.units_n,distribution_x=rng.dx_u,distribution_h=rng.threshold_n,\
                         mu_h=[muh1,muh2],sigma_h=[sigma_h_1,sigma_h_2],mu_x=[mux1,mux1],sigma_x=[sigmax1,sigmax1],err_type=0,number_of_options=number_of_options,\
                         mu_m=[mu_m_1,mu_m_2],sigma_m=[sigma_m_1,sigma_m_2])
                     if success == 1:
                         count += 1
+                    vote_vault.append(votes)
                 mu_va = {'$\mu_{h_1}$':muh,'$\mu_{h_2}$':muh,'$\mu_{x_1}$': mux,'$\mu_{x_2}$': mux,"success_rate":count/runs}
+                for i in range(runs):
+                    for j in range(number_of_options):
+                        mu_va[str((i,j))] = vote_vault[i][j]
                 return mu_va
 
-            parallel(mux1muh1,mu_h,mu_x,columns_name=['$\mu_{h_1}$','$\mu_{h_2}$','$\mu_{x_1}$','$\mu_{x_2}$',"success_rate"],save_string=save_string,batch_size=3*len(mu_h))
+            parallel(mux1muh1,mu_h,mu_x,columns_name=['$\mu_{h_1}$','$\mu_{h_2}$','$\mu_{x_1}$','$\mu_{x_2}$',"success_rate"]+ [str((i,j)) for i in range(runs) for j in range(number_of_options)],save_string=save_string,batch_size=3*len(mu_h))
 
             # [slope,intercept,hars] = vis.data_visualize(file_name=save_string+".csv",save_plot=save_string,x_var_='$\mu_{x_1}$',y_var_='$\mu_{h_1}$',cbar_orien="vertical",num_of_opts=nop,line_labels=number_of_options,z_var_='success_rate',plot_type='graphics',sigma_x_1=sigma_x_1,delta_mu=delta_mu,sigma_x_2=sigma_x_2,gaussian=0,uniform=1,mu_m=mu_m_1)
 
-            message = str(nop)+' number of options simulation finished'
-            pushbullet_message('Python Code','Results out! '+message)
+            # message = str(nop)+' number of options simulation finished'
+            # pushbullet_message('Python Code','Results out! '+message)
             cnt += 1
+
+if uniform_x_normal_h_vary_sig==1:
+    continuation = False
+    mum = [10,50,100,200,500]
+    cnt = 145
+    number_of_opts = 5
+    sig_q = [np.round(i,decimals=1) for i in range(15)]
+    for i in mum:
+        mu_m_1=i
+        sigma_m_1=0
+        mu_m_2=i
+        sigma_m_2=0
+        
+        # sigma_h_1=1
+        # sigma_h_2=1
+        # sigma_x_1 = 3*sigma_h_1
+        # sigma_x_2= 3*sigma_h_1
+        sigma_h_1 = 3
+        sigma_h_2 = 3
+        runs = 100
+        batch_size = 50
+        delta_mu = 0
+        mu_x = [np.round(1+i,decimals=1) for i in range(4)]
+        mu_h = [np.round(i*0.1,decimals=1) for i in range(151)]
+        
+        for sig in sig_q:
+            sigma_x_1 = sig
+            sigma_x_2 = sig
+            low_x_1 = -np.sqrt(3)*sigma_x_1                         #   Lower bound of distribution from which quality stimulus are sampled randomly
+            high_x_1 = np.sqrt(3)*sigma_x_1
+            save_string =  'uxgh_mu_h_vs_mu_x_sig_q_'+str(sig)#'gxgh_sx=sh_mu_h_vs_mu_x_vs_RCD_nop_'+str(nop) # str(cnt)+
+            save_string,param = save_data(save_string,continuation)
+            if isinstance(param,type(None))==False:
+                param.write("mu_m_1 : "+str(mu_m_1)+"\n")
+                param.write("mu_m_2 : "+str(mu_m_2)+"\n")
+                param.write("sigma_x_1 : "+str(sigma_x_1)+"\n")
+                param.write("sigma_x_2 : "+str(sigma_x_2)+"\n")
+                param.write("sigma_h_1 : "+str(sigma_h_1)+"\n")
+                param.write("sigma_h_2 : "+str(sigma_h_2)+"\n")
+                param.write("sigma_m_1 : "+str(sigma_m_1)+"\n")
+                param.write("sigma_m_2 : "+str(sigma_m_2)+"\n")
+                param.write("nop : "+str(number_of_opts)+"\n")
+                param.write("delta_mu : "+str(delta_mu)+"\n")
+
+            def mux1muh1(muh,mux):
+                mux1 = mux + low_x_1
+                sigmax1 = mux + high_x_1
+                muh1 = muh
+                muh2 = muh
+                count = 0
+                vote_vault = []
+                for k in range(runs):
+                    success,incrt,incrt_w_n,yes_test,max_rat_pval,pval_mat,votes = wf.multi_run(distribution_m=rng.units_n,distribution_x=rng.dx_u,distribution_h=rng.threshold_n,\
+                        mu_h=[muh1,muh2],sigma_h=[sigma_h_1,sigma_h_2],mu_x=[mux1,mux1],sigma_x=[sigmax1,sigmax1],err_type=0,number_of_options=number_of_opts,\
+                        mu_m=[mu_m_1,mu_m_2],sigma_m=[sigma_m_1,sigma_m_2])
+                    if success == 1:
+                        count += 1
+                    vote_vault.append(votes)
+                    
+                mu_va = {'$\mu_{h_1}$':muh,'$\mu_{h_2}$':muh,'$\mu_{x_1}$': mux,'$\mu_{x_2}$': mux,"success_rate":count/runs}
+                for i in range(runs):
+                    for j in range(number_of_options):
+                        mu_va[str((i,j))] = vote_vault[i][j]
+                return mu_va
+
+            parallel(mux1muh1,mu_h,mu_x,columns_name=['$\mu_{h_1}$','$\mu_{h_2}$','$\mu_{x_1}$','$\mu_{x_2}$',"success_rate",'Average p-value','Wrong_ranking_cost_without_no_proportion']+ [str((i,j)) for i in range(runs) for j in range(number_of_options)],save_string=save_string,batch_size=3*len(mu_h))
+
+            # [slope,intercept,hars] = vis.data_visualize(file_name=save_string+".csv",save_plot=save_string,x_var_='$\mu_{x_1}$',y_var_='$\mu_{h_1}$',cbar_orien="vertical",num_of_opts=nop,line_labels=number_of_options,z_var_='success_rate',plot_type='graphics',sigma_x_1=sigma_x_1,delta_mu=delta_mu,sigma_x_2=sigma_x_2,mu_m=mu_m_1)
+
+            # vis.data_visualize(file_name=save_string+".csv",save_plot=save_string+'Pval',x_var_='$\mu_{x_1}$',y_var_='Average p-value',num_of_opts=number_of_opts,plot_type='line')
+            # vis.data_visualize(file_name=save_string+".csv",save_plot=save_string+'WRC',x_var_='$\mu_{x_1}$',y_var_='Wrong_ranking_cost_without_no_proportion',num_of_opts=number_of_opts,plot_type='line')
+
+            # message = str(nop)+' number of options simulation finished'
+            # pushbullet_message('Python Code','Results out! '+message)
+            cnt += 1
+
 
 if uniform_x_normal_h_sigma==1:
     continuation = False
     mum_uxgh = [10,50,100,200,500]
-    number_of_opts_uxgh = [80,100]
+    number_of_opts_uxgh = [2,5,8,10,15,20,30,40,80,100]
     cnt = 85
     mum_slopes_uxgh = []
     for i in mum_uxgh:
@@ -806,20 +978,21 @@ if uniform_x_normal_h_sigma==1:
         mu_m_2=i
         sigma_m_2=0
         
-        mu_x_1 = 7.5
-        mu_x_2 = 7.5
+        mu_x_1 = 5
+        mu_x_2 = 5
         # mu_h_1 = mu_x_1
         # mu_h_2 = mu_x_1
         mu_x = List([mu_x_1,mu_x_2])
-        runs = 500
+        runs = 100
         batch_size = 50
         delta_sigma = 0
-        sigma_x = [np.round(0.1+i*0.1,decimals=1) for i in range(151)]
-        sigma_h = [np.round(0.1+i*0.1,decimals=1) for i in range(151)]
+        sigma_x = [2]#[np.round(0.1+i*0.1,decimals=1) for i in range(151)]
+        # sigma_h = [2]#[np.round(0.1+i*0.1,decimals=1) for i in range(151)]
         num_slopes = []
         for nop in number_of_opts_uxgh:
+            sigma_h = [(-0.07*np.log10(nop)+0.67)*sigma_x[0]]#[np.round(0.1+i*0.1,decimals=1) for i in range(151)]
             number_of_options = nop
-            save_string = 'uxgh_sigma_h_vs_sigma_x_vs_RCD_nop'+str(nop) # str(cnt)+
+            save_string = 'D_h*_uxgh_sigma_h_vs_sigma_x_nop'+str(nop)#'uxgh_sigma_h_vs_sigma_x_vs_RCD_nop'+str(nop) # str(cnt)+
             save_string,param = save_data(save_string,continuation)
             if isinstance(param,type(None))==False:
                 param.write("mu_m_1 : "+str(mu_m_1)+"\n")
@@ -829,6 +1002,10 @@ if uniform_x_normal_h_sigma==1:
                 param.write("sigma_m_1 : "+str(sigma_m_1)+"\n")
                 param.write("sigma_m_2 : "+str(sigma_m_2)+"\n")
                 param.write("nop : "+str(number_of_options)+"\n")
+                param.write("sigma_h_1 : "+str(sigma_h[0])+"\n")
+                param.write("sigma_h_2 : "+str(sigma_h[0])+"\n")
+                param.write("sigma_x_1 : "+str(sigma_x[0])+"\n")
+                param.write("sigma_x_2 : "+str(sigma_x[0])+"\n")
                 # param.write("mu_h_1 : "+str(mu_h_1)+"\n")
                 # param.write("mu_h_2 : "+str(mu_h_2)+"\n")
 
@@ -836,16 +1013,21 @@ if uniform_x_normal_h_sigma==1:
                 mux1 = mu_x_1 - np.sqrt(3)*sigx
                 sigmax1 = mu_x_1 + np.sqrt(3)*sigx
                 count = 0
+                vote_vault = []
                 for k in range(runs):
-                    success,incrt,incrt_w_n,yes_test,max_rat_pval,pval_mat = wf.multi_run(distribution_m=rng.units_n,distribution_x=rng.dx_u,distribution_h=rng.threshold_n,\
+                    success,incrt,incrt_w_n,yes_test,max_rat_pval,pval_mat,votes = wf.multi_run(distribution_m=rng.units_n,distribution_x=rng.dx_u,distribution_h=rng.threshold_n,\
                         mu_h=[mu_h_1,mu_h_2],sigma_h=[sigh,sigh],mu_x=[mux1,mux1],sigma_x=[sigmax1,sigmax1],err_type=0,number_of_options=number_of_options,\
                         mu_m=[mu_m_1,mu_m_2],sigma_m=[sigma_m_1,sigma_m_2])
                     if success == 1:
                         count += 1
+                    vote_vault.append(votes)
                 mu_va = {'$\sigma_{h_1}$':sigh,'$\sigma_{h_2}$':sigh,'$\sigma_{x_1}$': sigx,'$\sigma_{x_2}$': sigx,"success_rate":count/runs}
+                for i in range(runs):
+                    for j in range(number_of_options):
+                        mu_va[str((i,j))] = vote_vault[i][j]
                 return mu_va
 
-            parallel(sigmax1sigmah1,sigma_h,sigma_x,columns_name=['$\sigma_{h_1}$','$\sigma_{h_2}$','$\sigma_{x_1}$','$\sigma_{x_2}$',"success_rate"],save_string=save_string,batch_size=3*len(sigma_h),do=True,mu_x=mu_x,n=number_of_options)
+            parallel(sigmax1sigmah1,sigma_h,sigma_x,columns_name=['$\sigma_{h_1}$','$\sigma_{h_2}$','$\sigma_{x_1}$','$\sigma_{x_2}$',"success_rate"]+ [str((i,j)) for i in range(runs) for j in range(number_of_options)],save_string=save_string,batch_size=3*len(sigma_h),do=True,mu_x=mu_x,n=number_of_options)
             # step = 0.0001
             # prd = yn.Prediction()
             # min_sig_h=[]
@@ -875,7 +1057,7 @@ if normal_x_normal_h==1:
     continuation = False
     mum = [10,50,100,200,500]
     cnt = 145
-    number_of_opts = [8,15,30,40]
+    number_of_opts = [2,5,8,10,15,20,30,40,80,100]
     for i in mum:
         mu_m_1=i
         sigma_m_1=0
@@ -890,15 +1072,15 @@ if normal_x_normal_h==1:
         sigma_x_2= 1
         sigma_h_1=sigma_x_1
         sigma_h_2=sigma_x_1
-        runs = 500
+        runs = 100
         batch_size = 50
         delta_mu = 0
-        mu_x = [np.round(i*0.1,decimals=1) for i in range(151)]
+        mu_x = [np.round(1+i,decimals=1) for i in range(7)]
         mu_h = [np.round(i*0.1,decimals=1) for i in range(151)]
         
         for nop in number_of_opts:
             number_of_options = nop
-            save_string =  'gxgh_sx=sh_mu_h_vs_mu_x_vs_RCD_nop_'+str(nop) # str(cnt)+
+            save_string =  'gxgh_mu_h_vs_mu_x_nop_'+str(nop)#'gxgh_sx=sh_mu_h_vs_mu_x_vs_RCD_nop_'+str(nop) # str(cnt)+
             save_string,param = save_data(save_string,continuation)
             if isinstance(param,type(None))==False:
                 param.write("mu_m_1 : "+str(mu_m_1)+"\n")
@@ -919,9 +1101,97 @@ if normal_x_normal_h==1:
                 muh1 = muh
                 muh2 = muh
                 count = 0
+                vote_vault = []
+                for k in range(runs):
+                    success,incrt,incrt_w_n,yes_test,max_rat_pval,pval_mat,votes = wf.multi_run(distribution_m=rng.units_n,distribution_x=rng.dx_n,distribution_h=rng.threshold_n,\
+                        mu_h=List([muh1,muh2]),sigma_h=List([sigma_h_1,sigma_h_2]),mu_x=List([mux1,mux2]),sigma_x=List([sigma_x_1,sigma_x_2]),err_type=0,number_of_options=number_of_options,\
+                        mu_m=List([mu_m_1,mu_m_2]),sigma_m=List([sigma_m_1,sigma_m_2]))
+                    if success == 1:
+                        count += 1
+                    vote_vault.append(votes)
+
+                    # flag = 0
+                    # for i in yes_test:
+                    #     for j in i:
+                    #         if j[0][0]== np.nan or j[1]<0:
+                    #             flag = 1
+                    #             break
+                    # if max_rat_pval[0][0]!= np.nan and max_rat_pval[1]>0 and flag!=1:
+                    #     avg_pval += max_rat_pval[0][1]
+                    # else:
+                    #     avg_pval += 1
+
+                    # avg_incrtness_w_n += np.concatenate((incrt_w_n[0],incrt_w_n[1],incrt_w_n[2]*pval_mat,incrt_w_n[3],incrt_w_n[4]),axis=1)
+
+                mu_va = {'$\mu_{h_1}$':muh1,'$\mu_{h_2}$':muh2,'$\mu_{x_1}$': mux1,'$\mu_{x_2}$': mux2,"success_rate":count/runs}#{'$\mu_{h_1}$':muh1,'$\mu_{h_2}$':muh2,'$\mu_{x_1}$': mux1,'$\mu_{x_2}$': mux2,"success_rate":count/runs,'Average p-value':avg_pval/runs,'Wrong_ranking_cost_without_no_proportion':avg_incrtness_w_n/runs}
+                for i in range(runs):
+                    for j in range(number_of_options):
+                        mu_va[str((i,j))] = vote_vault[i][j]
+                return mu_va
+
+            parallel(mux1muh1,mu_h,mu_x,columns_name=['$\mu_{h_1}$','$\mu_{h_2}$','$\mu_{x_1}$','$\mu_{x_2}$',"success_rate",'Average p-value','Wrong_ranking_cost_without_no_proportion']+ [str((i,j)) for i in range(runs) for j in range(number_of_options)],save_string=save_string,batch_size=3*len(mu_h))
+
+            # [slope,intercept,hars] = vis.data_visualize(file_name=save_string+".csv",save_plot=save_string,x_var_='$\mu_{x_1}$',y_var_='$\mu_{h_1}$',cbar_orien="vertical",num_of_opts=nop,line_labels=number_of_options,z_var_='success_rate',plot_type='graphics',sigma_x_1=sigma_x_1,delta_mu=delta_mu,sigma_x_2=sigma_x_2,mu_m=mu_m_1)
+
+            # vis.data_visualize(file_name=save_string+".csv",save_plot=save_string+'Pval',x_var_='$\mu_{x_1}$',y_var_='Average p-value',num_of_opts=number_of_opts,plot_type='line')
+            # vis.data_visualize(file_name=save_string+".csv",save_plot=save_string+'WRC',x_var_='$\mu_{x_1}$',y_var_='Wrong_ranking_cost_without_no_proportion',num_of_opts=number_of_opts,plot_type='line')
+
+            # message = str(nop)+' number of options simulation finished'
+            # pushbullet_message('Python Code','Results out! '+message)
+            cnt += 1
+
+if normal_x_normal_h_vary_sig==1:
+    continuation = False
+    mum = [10,50,100,200,500]
+    cnt = 145
+    number_of_opts = 5
+    sig_q = [np.round(i,decimals=1) for i in range(15)]
+    for i in mum:
+        mu_m_1=i
+        sigma_m_1=0
+        mu_m_2=i
+        sigma_m_2=0
+        
+        # sigma_h_1=1
+        # sigma_h_2=1
+        # sigma_x_1 = 3*sigma_h_1
+        # sigma_x_2= 3*sigma_h_1
+        sigma_h_1 = 3
+        sigma_h_2 = 3
+        runs = 100
+        batch_size = 50
+        delta_mu = 0
+        mu_x = [np.round(1+i,decimals=1) for i in range(4)]
+        mu_h = [np.round(i*0.1,decimals=1) for i in range(151)]
+        
+        for sig in sig_q:
+            sigma_x_1 = sig
+            sigma_x_2 = sig
+
+            save_string =  'gxgh_mu_h_vs_mu_x_sig_q_'+str(sig)#'gxgh_sx=sh_mu_h_vs_mu_x_vs_RCD_nop_'+str(nop) # str(cnt)+
+            save_string,param = save_data(save_string,continuation)
+            if isinstance(param,type(None))==False:
+                param.write("mu_m_1 : "+str(mu_m_1)+"\n")
+                param.write("mu_m_2 : "+str(mu_m_2)+"\n")
+                param.write("sigma_x_1 : "+str(sigma_x_1)+"\n")
+                param.write("sigma_x_2 : "+str(sigma_x_2)+"\n")
+                param.write("sigma_h_1 : "+str(sigma_h_1)+"\n")
+                param.write("sigma_h_2 : "+str(sigma_h_2)+"\n")
+                param.write("sigma_m_1 : "+str(sigma_m_1)+"\n")
+                param.write("sigma_m_2 : "+str(sigma_m_2)+"\n")
+                param.write("nop : "+str(number_of_opts)+"\n")
+                param.write("delta_mu : "+str(delta_mu)+"\n")
+
+            def mux1muh1(muh,mux,avg_pval = 0):
+                # avg_incrtness_w_n = np.zeros((number_of_options,5*number_of_options))
+                mux1 = mux
+                mux2 = delta_mu + mux
+                muh1 = muh
+                muh2 = muh
+                count = 0
                 for k in range(runs):
                     success,incrt,incrt_w_n,yes_test,max_rat_pval,pval_mat = wf.multi_run(distribution_m=rng.units_n,distribution_x=rng.dx_n,distribution_h=rng.threshold_n,\
-                        mu_h=List([muh1,muh2]),sigma_h=List([sigma_h_1,sigma_h_2]),mu_x=List([mux1,mux2]),sigma_x=List([sigma_x_1,sigma_x_2]),err_type=0,number_of_options=number_of_options,\
+                        mu_h=List([muh1,muh2]),sigma_h=List([sigma_h_1,sigma_h_2]),mu_x=List([mux1,mux2]),sigma_x=List([sigma_x_1,sigma_x_2]),err_type=0,number_of_options=number_of_opts,\
                         mu_m=List([mu_m_1,mu_m_2]),sigma_m=List([sigma_m_1,sigma_m_2]))
                     if success == 1:
                         count += 1
@@ -949,8 +1219,8 @@ if normal_x_normal_h==1:
             # vis.data_visualize(file_name=save_string+".csv",save_plot=save_string+'Pval',x_var_='$\mu_{x_1}$',y_var_='Average p-value',num_of_opts=number_of_opts,plot_type='line')
             # vis.data_visualize(file_name=save_string+".csv",save_plot=save_string+'WRC',x_var_='$\mu_{x_1}$',y_var_='Wrong_ranking_cost_without_no_proportion',num_of_opts=number_of_opts,plot_type='line')
 
-            message = str(nop)+' number of options simulation finished'
-            pushbullet_message('Python Code','Results out! '+message)
+            # message = str(nop)+' number of options simulation finished'
+            # pushbullet_message('Python Code','Results out! '+message)
             cnt += 1
 
 if normal_x_normal_h_1==1:
@@ -1022,7 +1292,7 @@ if normal_x_normal_h_1==1:
 if normal_x_normal_h_sigma==1:
     continuation = False
     mum_gxgh = [10,50,100,200,500]
-    number_of_opts_gxgh = [80,100]
+    number_of_opts_gxgh = [2,5,8,10,15,20,30,40,80,100]
     file_num = 105
     mum_slopes_gxgh = []
     for i in mum_gxgh:
@@ -1030,20 +1300,21 @@ if normal_x_normal_h_sigma==1:
         sigma_m_1=0
         mu_m_2=i
         sigma_m_2=0
-        mu_x_1=7.5
-        mu_x_2=7.5
+        mu_x_1=5
+        mu_x_2=5
         # mu_h_1 = mu_x_1
         # mu_h_2= mu_x_1
         mu_x = List([mu_x_1,mu_x_2])
-        runs = 500
+        runs = 100
         batch_size = 50
         delta_sigma = 0
-        sigma_x = [np.round(i*0.1,decimals=1) for i in range(151)]
-        sigma_h = [np.round(i*0.1,decimals=1) for i in range(151)]
+        sigma_x = [2]#[np.round(0.1+i*0.1,decimals=1) for i in range(151)]
+        # sigma_h = [2]#[np.round(0.1+i*0.1,decimals=1) for i in range(151)]
         num_slopes = []
         for nop in number_of_opts_gxgh:
+            sigma_h = [(0.07*np.log10(nop)+0.57)*sigma_x[0]]#[np.round(0.1+i*0.1,decimals=1) for i in range(151)]
             number_of_options = nop
-            save_string = 'gxgh_mx=mh_sigma_h_vs_sigma_x_vs_RCD_nop_'+str(nop) # str(file_num)+
+            save_string = 'D_h*_gxgh_sigma_h_vs_sigma_x_nop_'+str(nop)#'gxgh_mx=mh_sigma_h_vs_sigma_x_vs_RCD_nop_'+str(nop) # str(file_num)+
             save_string,param = save_data(save_string,continuation)
             if isinstance(param,type(None))==False:
                 param.write("mu_m_1 : "+str(mu_m_1)+"\n")
@@ -1053,6 +1324,10 @@ if normal_x_normal_h_sigma==1:
                 param.write("sigma_m_1 : "+str(sigma_m_1)+"\n")
                 param.write("sigma_m_2 : "+str(sigma_m_2)+"\n")
                 param.write("nop : "+str(number_of_options)+"\n")
+                param.write("sigma_h_1 : "+str(sigma_h[0])+"\n")
+                param.write("sigma_h_2 : "+str(sigma_h[0])+"\n")
+                param.write("sigma_x_1 : "+str(sigma_x[0])+"\n")
+                param.write("sigma_x_2 : "+str(sigma_x[0])+"\n")
                 # param.write("mu_h_1 : "+str(mu_h_1)+"\n")
                 # param.write("mu_h_2 : "+str(mu_h_2)+"\n")
 
@@ -1062,16 +1337,21 @@ if normal_x_normal_h_sigma==1:
                 sigma_h_1 = sigma_h
                 sigma_h_2 = sigma_h
                 count = 0
+                vote_vault = []
                 for k in range(runs):
-                    success,incrt,incrt_w_n,yes_test,max_rat_pval,pval_mat = wf.multi_run(distribution_m=rng.units_n,distribution_x=rng.dx_n,distribution_h=rng.threshold_n,\
+                    success,incrt,incrt_w_n,yes_test,max_rat_pval,pval_mat,votes = wf.multi_run(distribution_m=rng.units_n,distribution_x=rng.dx_n,distribution_h=rng.threshold_n,\
                         mu_h=[mu_h_1,mu_h_2],sigma_h=[sigma_h_1,sigma_h_2],mu_x=[mu_x_1,mu_x_2],sigma_x=[sigma_x_1,sigma_x_2],err_type=0,number_of_options=number_of_options,\
                         mu_m=[mu_m_1,mu_m_2],sigma_m=[sigma_m_1,sigma_m_2])
                     if success == 1:
                         count += 1
+                    vote_vault.append(votes)
                 mu_va = {'$\sigma_{h_1}$':sigma_h_1,'$\sigma_{h_2}$':sigma_h_2,'$\sigma_{x_1}$': sigma_x_1,'$\sigma_{x_2}$': sigma_x_2,"success_rate":count/runs}
+                for i in range(runs):
+                    for j in range(number_of_options):
+                        mu_va[str((i,j))] = vote_vault[i][j]
                 return mu_va
 
-            parallel(sigx1sigh1,sigma_h,sigma_x,columns_name=['$\sigma_{h_1}$','$\sigma_{h_2}$','$\sigma_{x_1}$','$\sigma_{x_2}$',"success_rate"],save_string=save_string,batch_size=3*len(sigma_h),continuation=continuation,do=True,mu_x=mu_x,n=number_of_options)
+            parallel(sigx1sigh1,sigma_h,sigma_x,columns_name=['$\sigma_{h_1}$','$\sigma_{h_2}$','$\sigma_{x_1}$','$\sigma_{x_2}$',"success_rate"]+ [str((i,j)) for i in range(runs) for j in range(number_of_options)],save_string=save_string,batch_size=3*len(sigma_h),continuation=continuation,do=True,mu_x=mu_x,n=number_of_options)
 
             # step = 0.0001
             # prd = yn.Prediction()

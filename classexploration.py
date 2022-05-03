@@ -20,8 +20,11 @@ import faulthandler
 import keras
 import tensorflow as tf
 
-path = os.getcwd() + "/results/"
-
+# path = os.getcwd() + "/results_sigma/"
+# path = os.getcwd() + "/sigma_sigma/"
+# path = os.getcwd() + "/mu_h=mu_x_s_h_vs_s_q/"
+# path = os.getcwd() + "/sig_mu_imp/"
+path = os.getcwd() + "/F7/"
 def pushbullet_message(title, body):
     msg = {"type": "note", "title": title, "body": body}
     TOKEN = 'o.YlTBKuQWnkOUsCP9ZxzWC9pvFNz1G0mi'
@@ -107,6 +110,8 @@ class Decision_making:
         """
         Returns success/failure of decision making when there are multiple correct decisions as per the units
         """
+        if np.sum(self.votes) == 0:
+            return 0
         available_opt = np.array(np.where(np.array(self.votes) == max(self.votes)))[0]
         opt_choosen = np.random.randint(0,len(available_opt))
         if available_opt[opt_choosen] ==  ref_highest_quality:
@@ -258,7 +263,7 @@ class workFlow:
         mu_assessment_err=mu_assessment_err,sigma_assessment_err=sigma_assessment_err)
         DM.quorum = quorum
         DM.vote_counter(assigned_units,Dx,pc)
-        majority_dec = DM.best_among_bests_no(ref_highest_quality)
+        majority_dec = DM.best_among_bests(ref_highest_quality)
         qrincorrectness = Qranking(number_of_options)
         # qrincorrectness.ref_ranking(Dx,DM.y_ratios,DM.no_votes)
         incorrectness = 0#qrincorrectness.incorrectness_cost(qrincorrectness.exp_rank)
@@ -267,7 +272,7 @@ class workFlow:
         if quorum == None:
             # plt.scatter(Dx,DM.votes)
             # plt.show()
-            return majority_dec,incorrectness,incorrectness_w_n,DM.yes_stats,DM.max_ratio_pvalue,DM.pval_mat
+            return majority_dec,incorrectness,incorrectness_w_n,DM.yes_stats,DM.max_ratio_pvalue,DM.pval_mat,DM.votes
         else:
             result,quorum_reached = DM.quorum_voting(assigned_units,Dx,ref_highest_quality)
             return result,quorum_reached,majority_dec
@@ -716,7 +721,7 @@ if crosscheck == 1:
     ax.fill_between(x[:np.argmin(np.abs(x-x_))],0,pdfu[:np.argmin(np.abs(x-x_))],facecolor='orange')
     plt.show()
 
-check_qualityrange = 1
+check_qualityrange = 0
 if check_qualityrange == 1:
     fig = plt.figure()
     ax = fig.add_subplot(121)
@@ -859,9 +864,10 @@ if distributions1 == 1:
             pdf = np.multiply(pdf,1/area)
 
             for nop in range(len(number_of_options)):
-                axs[nop,2*k].plot(dis_x,pdf)
+                axs[nop,2*k].plot(dis_x,pdf,c='black')
                 
                 axs[nop,2*k].invert_yaxis()
+                axs[nop,2*k].axes.get_yaxis().set_visible(False)
 
                 slices = []
                 mid_slices=[]
@@ -915,14 +921,18 @@ if distributions1 == 1:
                 # print([slices,mid_slices])
                 # axs[nop,2*k+1].bar(mid_slices,bins,width=0.2)
                 axs[nop,2*k+1] = axs[nop,2*k].twinx()
-                axs[nop,2*k+1].bar(mid_slices,bins,width=0.2)
+                ticks = [tick for tick in axs[nop,2*k+1].get_yticks() if tick >=0]
+                axs[nop,2*k+1].set_yticks(np.arange(0, 800, step=300))
+                axs[nop,2*k+1].bar(mid_slices,bins,width=0.2,color='indigo')
+
                 mean_esmes2m = prd.ICPDF(1-(1/number_of_options[nop]),mu_x,stop,step,dis_x,pdf)
-                axs[nop,2*k].axvline(mean_esmes2m,0,500,color='red',label = r'$\mu_{ESM,ES2M}$',linewidth = 0.5)
-                axs[nop,2*k].legend(loc='upper right')
-                axs[nop,2*k+1].axvline(mean_esmes2m,0,500,color='red',label = r'$\mu_{ESM,ES2M}$',linewidth = 0.5)
+                axs[nop,2*k].axvline(mean_esmes2m,0,500,color='red',label = r'$\bf \mu_{h}^{*}$',linewidth = 1)
+                axs[nop,2*k].legend(loc='upper left',frameon=False,fontsize=16)
+                axs[nop,2*k+1].axvline(mean_esmes2m,0,500,color='red',label = r'$\bf \mu_{h}^{*}$',linewidth = 1)
                 # axs[nop,2*k+1].legend(loc='upper left')
-                axs[nop,2*k].title.set_text("Number of samples drawn = "+str(number_of_options[nop]))
+                axs[nop,2*k].title.set_text("Number of samples drawn,"+r"$\bf n$"+" = "+str(number_of_options[nop]))
+                axs[nop,2*k].title.set_fontweight('bold')
                 align_yaxis(axs[nop,2*k+1],0,axs[nop,2*k],0)
-
-
+                plt.yticks(fontweight='bold',fontsize = 14)
+                plt.xticks(fontweight='bold',fontsize = 14)
     plt.show()

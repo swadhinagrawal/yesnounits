@@ -30,10 +30,10 @@ def parallel(func,inputs):
 	return output
 
 def looper(p,vP,path,no_units):
-    for i in range(200):
+    for i in range(10):
         options = parallel(partial(obj.Object,o_type='O',p=p),range(p.num_opts))
         qualities = np.array([i.quality for i in options])
-        robots_to_assign = np.array([40,39,10,5,2]) + no_units
+        robots_to_assign = np.array([40,39,14,5,2]) + no_units
         p.sub_group_size = np.zeros_like(robots_to_assign)
         for i in range(len(robots_to_assign)):
             maximums = np.where(qualities==max(qualities))[0]
@@ -68,11 +68,11 @@ def paramObjects(fixed_params,vP_):
 	return p
 
 if __name__=="__main__":
-    path = os.getcwd() + "/results/"
-    plt.close()
-    plt.ion()
-    vP = ps.variableParams(['$x_{max}$ opt No.','$x_{max}$','$CDM$ opt No.','$CDM$','Iterations','No_units'],path)
-    fixed_params_column = ['n','$D_{x}$','$\mu_{x_{1}}$','$\mu_{x_{2}}$','$\sigma_{x_{1}}$','$\sigma_{x_{2}}$'] 
+    path = os.getcwd() + "/results/"            # Path where all output results are stored
+
+    vP = ps.variableParams(['$x_{max}$ opt No.','$x_{max}$','$CDM$ opt No.','$CDM$','Iterations','No_units'],path)      # Set of all the parameters from where we derive parameters to explore, this also contains some utility functions
+
+    fixed_params_column = ['n','$D_{x}$','$\mu_{x_{1}}$','$\mu_{x_{2}}$','$\sigma_{x_{1}}$','$\sigma_{x_{2}}$']         # These are the parameters that are kept fixed in these experiments
     fixed_params = [{'n': vP.num_opts[2],'$D_{x}$':vP.Dx[0],'$\mu_{x_{1}}$':vP.mu_x_1[69],'$\mu_{x_{2}}$':vP.mu_x_2[69],\
         '$\sigma_{x_{1}}$':vP.sigma_x_1[9],'$\sigma_{x_{2}}$':vP.sigma_x_2[9]}]
 
