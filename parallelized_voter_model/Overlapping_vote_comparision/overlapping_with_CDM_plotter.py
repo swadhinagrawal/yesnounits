@@ -152,5 +152,5 @@ if __name__=="__main__":
 	# plt.minorticks_on()
 	# plt.grid(b=True, which='minor', color='black', linestyle='-',linewidth = 0.2,alpha=0.1)
 
-	plt.savefig(path+"6_overlapped_plot.png",format = "png",bbox_inches="tight",pad_inches=0.2)
+	# plt.savefig(path+"6_overlapped_plot.png",format = "png",bbox_inches="tight",pad_inches=0.2)
 	plt.show()
