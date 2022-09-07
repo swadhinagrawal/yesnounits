@@ -1,15 +1,1 @@
-Data
-F7
-mu_h=mu_h_pred_s_h_vs_sq
-mu_h=mu_x_s_h_vs_s_q
-results
-results1
-results_compare_best_two
-results_new
-results_paper
-results_sigma
-sigma_sigma
-sig_mu_imp
-temp
-*.eps
-*.png
+ANTS2022/results_compare_best_two

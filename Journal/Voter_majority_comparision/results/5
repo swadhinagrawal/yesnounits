@@ -1,0 +1,9 @@
+sigma_q_1 : 1
+sigma_q_2 : 1
+sigma_h_1 : 1
+sigma_h_2 : 1
+sigma_m_1 : 0
+sigma_m_2 : 0
+delta_muQ : 0
+
+# Agents of which option are exploiting how much of no-agents?
