@@ -105,7 +105,7 @@ def animate(i,line1,line2,dist1,dist2,storage,icpdf,bins,pdf_h):
     return line1, line2, dist1, dist2
 
 # plt.ion()
-thr_mem_anim_some_averaged = 1
+thr_mem_anim_some_averaged = 0
 if thr_mem_anim_some_averaged:
     path = os.getcwd() + "/results/"
     
@@ -137,7 +137,7 @@ if thr_mem_anim_some_averaged:
                 camera = Camera(fig)
 
                 if short_var < 4:
-                    for t in range(-1,2500,50):
+                    for t in range(-1,3500,50):
                         if t<0:
                             t = 0
                         thresholds = [data.iloc[t][str(i)] for i in range(250)]
@@ -165,7 +165,7 @@ if thr_mem_anim_some_averaged:
                         # plt.clf()
 
                 else:
-                    for t in range(-1,2500,50):
+                    for t in range(-1,3500,50):
                         if t<0:
                             t = 0
                         thresholds = [data.iloc[t][str(i)] for i in range(250)]
@@ -216,19 +216,31 @@ hell_dis_thr = np.array(hell_dis_thr)
 thrs = [0.3,0.5,0.8,1]
 memory = range(2,22,2)
 colors = ['green','blue','brown','red']
-for th in range(len(thrs)):
-    for mems in range(len(memory)):
+for th in range(0,len(thrs),2):
+    for mems in range(0,len(memory),2):
         hell_dis_thr_i = np.sum(hell_dis_thr[th,mems*20:(mems+1)*20,:],axis=0)/20
+        std_dev = np.zeros(len(t))
+        for elem in hell_dis_thr[th,mems*20:(mems+1)*20,:]:
+            std_dev = std_dev + ((elem - hell_dis_thr_i)**2)/20
+        std_dev = np.sqrt(std_dev)
+        ax1.fill_between(t,np.array(hell_dis_thr_i)-np.array(std_dev),np.array(hell_dis_thr_i)+np.array(std_dev),color=colors[th],alpha=(mems+1)/20)
         ax1.plot(t,np.array(hell_dis_thr_i),c=colors[th],label=str(thrs[th])+';'+str(memory[mems]),alpha=(mems+1)/10)
+
 
 fig2, ax2 = plt.subplots()
 hell_dis_mem = np.array(hell_dis_mem)
 
 mems = [2,10,20,30]
 thrs = np.arange(0.2,1.2,0.1)
-for m in range(len(mems)):
-    for thh in range(len(thrs)):
+for m in range(0,len(mems),2):
+    for thh in range(0,len(thrs),2):
         hell_dis_mem_i = np.sum(hell_dis_mem[m,thh*20:(thh+1)*20,:],axis=0)/20
+        std_dev = np.zeros(len(t))
+        for elem in hell_dis_mem[m,thh*20:(thh+1)*20,:]:
+            std_dev = std_dev + ((elem - hell_dis_mem_i)**2)/20
+        std_dev = np.sqrt(std_dev)
+        ax2.fill_between(t,np.array(hell_dis_mem_i)-np.array(std_dev),np.array(hell_dis_mem_i)+np.array(std_dev),color=colors[m],alpha=(thh+1)/20)
+        
         ax2.plot(t,np.array(hell_dis_mem_i),c=colors[m],label=str(mems[m])+';'+str(np.round(thrs[thh],decimals=1)),alpha=(thh+1)/10)
 
 ax1.set_xlabel("Time",fontsize = 18)
@@ -239,7 +251,10 @@ ax2.set_xlabel("Time",fontsize = 18)
 ax2.set_ylabel("Hellinger distance",fontsize = 18)
 ax2.set_title("For varying memory sizes and threshold steps (color w.r.t memory)")
 ax2.legend()
+fig1.savefig('accuracy_time_thr.png')
+fig2.savefig('accuracy_time_mem.png')
 plt.show()
+
 
 fig1, ax1 = plt.subplots()
 hell_dis_thr = np.array(hell_dis_thr)
@@ -247,11 +262,19 @@ hell_dis_thr = np.array(hell_dis_thr)
 thrs = [0.3,0.5,0.8,1]
 memory = range(2,22,2)
 colors = ['green','blue','brown','red']
-for th in range(len(thrs)):
+for th in range(0,len(thrs),2):
     hellinger_dist = []
+
+    std_dev = []
     for mems in range(len(memory)):
         hell_dis_thr_i = np.sum(hell_dis_thr[th,mems*20:(mems+1)*20,-1],axis=0)/20
         hellinger_dist.append(hell_dis_thr_i)
+        std_dev_ = 0
+        for elem in hell_dis_thr[th,mems*20:(mems+1)*20,-1]:
+            std_dev_ = std_dev_ + ((elem - hell_dis_thr_i)**2)/20
+        std_dev.append(np.sqrt(std_dev_))
+    
+    ax1.fill_between(memory,np.array(hellinger_dist)-np.array(std_dev),np.array(hellinger_dist)+np.array(std_dev),color=colors[th],alpha=0.3)    
     ax1.plot(memory,np.array(hellinger_dist),c=colors[th],label=str(thrs[th]))
 
 fig2, ax2 = plt.subplots()
@@ -259,11 +282,20 @@ hell_dis_mem = np.array(hell_dis_mem)
 
 mems = [2,10,20,30]
 thrs = np.arange(0.2,1.2,0.1)
-for m in range(len(mems)):
+for m in range(0,len(mems),2):
     hellinger_dist = []
+    std_dev = []
     for thh in range(len(thrs)):
         hell_dis_mem_i = np.sum(hell_dis_mem[m,thh*20:(thh+1)*20,-1],axis=0)/20
         hellinger_dist.append(hell_dis_mem_i)
+
+        std_dev_ = 0
+        for elem in hell_dis_mem[m,thh*20:(thh+1)*20,-1]:
+            std_dev_ = std_dev_ + ((elem - hell_dis_mem_i)**2)/20
+        std_dev.append(np.sqrt(std_dev_))
+    
+    ax2.fill_between(thrs,np.array(hellinger_dist)-np.array(std_dev),np.array(hellinger_dist)+np.array(std_dev),color=colors[m],alpha=0.3)    
+    
     ax2.plot(thrs,np.array(hellinger_dist),c=colors[m],label=str(mems[m]))
 
 ax1.set_xlabel("Memory sizes",fontsize = 18)
@@ -274,6 +306,8 @@ ax2.set_xlabel("Thresholds steps",fontsize = 18)
 ax2.set_ylabel("Hellinger distance",fontsize = 18)
 ax2.set_title("Color w.r.t memory")
 ax2.legend()
+fig1.savefig('accuracy_mem.png')
+fig2.savefig('accuracy_thr.png')
 plt.show()
 
 fig1, ax1 = plt.subplots()
@@ -282,10 +316,11 @@ hell_dis_thr = np.array(hell_dis_thr)
 thrs = [0.3,0.5,0.8,1]
 memory = range(2,22,2)
 colors = ['green','blue','brown','red']
-for th in range(len(thrs)):
+for th in range(0,len(thrs),2):
     t_i = []
     hellinger_dist_end = []
     hellinger_dist_start = []
+    std_dev = []
     for mems in range(len(memory)):
         hell_dis_thr_i = np.sum(hell_dis_thr[th,mems*20:(mems+1)*20,0],axis=0)/20
         hellinger_dist_start.append(hell_dis_thr_i)
@@ -298,10 +333,19 @@ for th in range(len(thrs)):
             for j in range(len(hell_dis_thr[th,mems*20:(mems+1)*20,:][0])):
                 if hell_dis_thr[th,mems*20:(mems+1)*20,:][i,j] <= hellinger_dist_end[mems]:
                     t_mem.append(j)
-        t_i.append(np.sum(t_mem)/len(t_mem))
+        mean_t_mem = np.sum(t_mem)/len(t_mem)
+        t_i.append(mean_t_mem)
+        std_dev_ = 0
+        for elem in t_mem:
+            std_dev_ = std_dev_ + ((1/elem - 1/mean_t_mem)**2)/len(t_mem)
+        std_dev.append(np.sqrt(std_dev_))
+    inverse_t_i = np.array([1/i for i in t_i])
+    ax1.fill_between(memory,inverse_t_i-np.array(std_dev),inverse_t_i+np.array(std_dev),color=colors[th],alpha=0.2)    
+    
     speed = []
     for i in range(len(t_i)):
-        speed.append((hellinger_dist_start[i]-hellinger_dist_end[i])/t_i[i])
+        # speed.append((hellinger_dist_start[i]-hellinger_dist_end[i])/t_i[i])
+        speed.append(1.0/t_i[i])
                 
     ax1.plot(memory,np.array(speed),c=colors[th],label=str(thrs[th]))
 
@@ -310,10 +354,11 @@ hell_dis_mem = np.array(hell_dis_mem)
 
 mems = [2,10,20,30]
 thrs = np.arange(0.2,1.2,0.1)
-for m in range(len(mems)):
+for m in range(0,len(mems),2):
     t_i = []
     hellinger_dist_end = []
     hellinger_dist_start = []
+    std_dev = []
     for thh in range(len(thrs)):
         hell_dis_mem_i = np.sum(hell_dis_mem[m,thh*20:(thh+1)*20,0],axis=0)/20
         hellinger_dist_start.append(hell_dis_mem_i)
@@ -326,19 +371,172 @@ for m in range(len(mems)):
             for j in range(len(hell_dis_mem[m,thh*20:(thh+1)*20,:][0])):
                 if hell_dis_mem[m,thh*20:(thh+1)*20,:][i,j] <= hellinger_dist_end[thh]:
                     t_th.append(j)
-        t_i.append(np.sum(t_th)/len(t_th))
+        mean_t_th = np.sum(t_th)/len(t_th)
+        t_i.append(mean_t_th)
+        std_dev_ = 0
+        for elem in t_th:
+            std_dev_ = std_dev_ + ((elem - mean_t_th)**2)/len(t_th)
+        std_dev.append(np.sqrt(std_dev_))
+    inverse_t_i = np.array([1/i for i in t_i])
+    ax2.fill_between(thrs,inverse_t_i-np.array(std_dev),inverse_t_i+np.array(std_dev),color=colors[m],alpha=0.2)    
+    
     speed = []
     for i in range(len(t_i)):
-        speed.append((hellinger_dist_start[i]-hellinger_dist_end[i])/t_i[i])
+        # speed.append((hellinger_dist_start[i]-hellinger_dist_end[i])/t_i[i])
+        speed.append(1.0/t_i[i])
 
     ax2.plot(thrs,np.array(speed),c=colors[m],label=str(mems[m]))
 
 ax1.set_xlabel("Memory sizes",fontsize = 18)
-ax1.set_ylabel("Speed",fontsize = 18)
+ax1.set_ylabel("Speed (1/t)",fontsize = 18)
 ax1.set_title("Color w.r.t threshold")
 ax1.legend()
 ax2.set_xlabel("Thresholds steps",fontsize = 18)
-ax2.set_ylabel("Speed",fontsize = 18)
+ax2.set_ylabel("Speed (1/t)",fontsize = 18)
 ax2.set_title("Color w.r.t memory")
 ax2.legend()
+fig1.savefig('speed_mem.png')
+fig2.savefig('speed_thr.png')
 plt.show()
+
+
+# plt.ion()
+speed_accuracy_tradeoff_some_averaged = 0
+if speed_accuracy_tradeoff_some_averaged:
+    path = os.getcwd() + "/results/"
+    
+    prd = Prediction()
+    run_no = 0
+    params = pd.read_csv(path+str(run_no)+'.csv')
+    data_files = np.sort(np.array([f for f in os.listdir(path) if '.csv' in f and f[:len(str(run_no))] == str(run_no) and len(f)>10]))
+    data_files = data_files.reshape((8,20))
+
+    start = 0.0
+    end = 25.0
+    x = np.arange(start,end,0.0001)
+    pdf_x = PDF(prd.gaussian,[10,15],[1,1],x)
+    bins = np.linspace(start,end,100)
+    # icpdf = prd.ICPDF(1-1/5.0,[10,10],0.0001,x,pdf_x)
+    # sig_h = (0.07*np.log10(1)+0.57)*1
+    # pdf_h,area = PDF(prd.gaussian,[icpdf,icpdf],[sig_h,sig_h],bins)
+    # pdf_h1,_ = PDF(prd.gaussian,[icpdf,icpdf],[sig_h,sig_h],x)
+    pdf_x1 = PDF(prd.gaussian,[10,15],[1,1],bins)
+    hell_dis_thr = []
+    hell_dis_mem = []
+    for var in range(data_files.shape[0]):
+        for runs in range(data_files.shape[1]):
+            hell_dis = []
+            if var < 4:
+                data = pd.read_csv(path+data_files[var,runs])
+                fig, ax = plt.subplots()
+                camera = Camera(fig)
+
+                for t in range(-1,2500,50):
+                    if t<0:
+                        t = 0
+                    thresholds = [data.iloc[t][str(i)] for i in range(250)]
+                    distribution = np.bincount(np.digitize(thresholds, bins),minlength=len(bins))
+                    mean = np.sum(thresholds)/len(thresholds)
+                    if len(distribution)>len(bins):
+                        distribution = distribution[1:]
+                    distribution_area = np.sum(distribution)*(bins[1]-bins[0])
+                    distribution = distribution/distribution_area
+
+                    hell_dis.append(Hellinger_distance(pdf_x1,distribution,bins))
+
+                    ax.plot([mean,mean],[0,max(distribution)],c='blue')
+                    # ax.plot([icpdf,icpdf],[0,max(pdf_h1)],c='green')
+                    ax.plot([12.5,12.5],[0,max(pdf_x)],c='red')
+                    # ax.plot(bins,pdf_h,c='black')
+                    # ax.plot(x,pdf_h1,c='green')
+                    ax.plot(x,pdf_x,c='red')
+                    ax.plot(bins,distribution,c='blue')
+                    
+                    plt.pause(0.0001)
+                    camera.snap()
+
+                    # ax.clear()
+                    # plt.clf()
+
+                animation = camera.animate()
+                animation.save(path+data_files[var,runs][:-4]+'.gif',writer='imagemagick')
+                
+                hell_dis_thr.append(hell_dis)
+                plt.close()
+
+            else:
+                data = pd.read_csv(path+data_files[var,runs])
+                fig, ax = plt.subplots()
+                camera = Camera(fig)
+                for t in range(-1,2500,50):
+                    if t<0:
+                        t = 0
+                    thresholds = [data.iloc[t][str(i)] for i in range(250)]
+                    distribution = np.bincount(np.digitize(thresholds, bins),minlength=len(bins))
+                    mean = np.sum(thresholds)/len(thresholds)
+                    if len(distribution)>len(bins):
+                        distribution = distribution[1:]
+                    distribution_area = np.sum(distribution)*(bins[1]-bins[0])
+                    distribution = distribution/distribution_area
+                    hell_dis.append(Hellinger_distance(pdf_x1,distribution,bins))
+
+                    ax.plot([mean,mean],[0,max(distribution)],c='blue')
+                    # ax.plot([icpdf,icpdf],[0,max(pdf_h1)],c='green')
+                    ax.plot([10,10],[0,max(pdf_x)],c='red')
+                    # ax.plot(bins,pdf_h,c='black')
+                    # ax.plot(x,pdf_h1,c='green')
+                    ax.plot(x,pdf_x,c='red')
+                    ax.plot(bins,distribution,c='blue')
+                    
+                    plt.pause(0.0001)
+                    camera.snap()
+                    # ax.clear()
+                    # plt.clf()
+                animation = camera.animate()
+                animation.save(path+data_files[var,runs][:-4]+'.gif',writer='imagemagick')
+                
+                hell_dis_mem.append(hell_dis)
+                plt.close()
+                
+    plt.ioff()
+    t = np.arange(-1,2500,50)
+    t[0] = 0
+
+    fig1, ax1 = plt.subplots()
+    hell_dis_thr = np.array(hell_dis_thr)
+    
+    thrs = [0.1,0.4,0.8,1.0]
+    colors = ['green','blue','brown','red']
+    for i in range(0,len(hell_dis_thr),20):
+        hell_dis_thr_i = np.sum(hell_dis_thr[i:i+20],axis=0)/20
+        i = int(i/20)
+        if i==0:
+            ax1.plot(t,np.array(hell_dis_thr_i),c=colors[i],label=thrs[i])
+        elif i==len(thrs)-1:
+            ax1.plot(t,np.array(hell_dis_thr_i),c=colors[i],label=thrs[i])
+        else:
+            ax1.plot(t,np.array(hell_dis_thr_i),c=colors[i],label=thrs[i])
+
+    fig2, ax2 = plt.subplots()
+    hell_dis_mem = np.array(hell_dis_mem)
+    
+    mems = [2,10,20,40]
+    for i in range(0,len(hell_dis_mem),20):
+        hell_dis_mem_i = np.sum(hell_dis_mem[i:i+20],axis=0)/20
+        i = int(i/20)
+        if i==0:
+            ax2.plot(t,np.array(hell_dis_mem_i),c=colors[i],label=mems[i])
+        elif i==len(mems)-1:
+            ax2.plot(t,np.array(hell_dis_mem_i),c=colors[i],label=mems[i])
+        else:
+            ax2.plot(t,np.array(hell_dis_mem_i),c=colors[i],label=mems[i])
+
+    ax1.set_xlabel("Time",fontsize = 18)
+    ax1.set_ylabel("Hellinger distance",fontsize = 18)
+    ax1.set_title("For varying thresholds steps, memory size = 2")
+    ax1.legend()
+    ax2.set_xlabel("Time",fontsize = 18)
+    ax2.set_ylabel("Hellinger distance",fontsize = 18)
+    ax2.set_title("For varying memory sizes, threshold step = 0.3")
+    ax2.legend()
+    plt.show()
