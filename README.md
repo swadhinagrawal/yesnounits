@@ -3,7 +3,6 @@
 
 ### What is this repository for? ###
 
-* How does the rate of making correct decision depends on parameters like acceptance-threshold distribution, quality distribution, decision-making unit distribution and more.
 * Version 1.0
 
 * Dependencies  
