@@ -105,7 +105,7 @@ def animate(i,line1,line2,dist1,dist2,storage,icpdf,bins,pdf_h):
     return line1, line2, dist1, dist2
 
 # plt.ion()
-thr_mem_anim_some_averaged = 0
+thr_mem_anim_some_averaged = 1
 if thr_mem_anim_some_averaged:
     path = os.getcwd() + "/results/"
     
@@ -137,7 +137,7 @@ if thr_mem_anim_some_averaged:
                 camera = Camera(fig)
 
                 if short_var < 4:
-                    for t in range(-1,3500,50):
+                    for t in range(-1,3500):
                         if t<0:
                             t = 0
                         thresholds = [data.iloc[t][str(i)] for i in range(250)]
@@ -165,7 +165,7 @@ if thr_mem_anim_some_averaged:
                         # plt.clf()
 
                 else:
-                    for t in range(-1,3500,50):
+                    for t in range(-1,3500):
                         if t<0:
                             t = 0
                         thresholds = [data.iloc[t][str(i)] for i in range(250)]

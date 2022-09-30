@@ -25,8 +25,7 @@ class DecisionMaking:
 			else:
 				r.response = 0
 				r.opt = 0
-			if r.threshold<6 and r.response==0:
-				print('Error!!!!')
+
 			if self.counter%self.mem_size != 0 or self.counter<self.mem_size:
 				r.memory[self.counter%(self.mem_size)] = r.response
 				self.threshold_update = 0

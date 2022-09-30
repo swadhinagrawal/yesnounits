@@ -6,8 +6,6 @@ import copy
 
 class DecisionMaking:
 	def __init__(self,robots,options,p,counter,mem_size,t_step):
-	# def __init__(self,animator,robots,options,p):
-		# self.animator = animator
 		self.ref_best = None
 		self.best_option = None
 		self.votes = np.zeros(p.num_opts)
@@ -25,17 +23,13 @@ class DecisionMaking:
 			else:
 				r.response = 0
 				r.opt = 0
-			if r.threshold<6 and r.response==0:
-				print('Error!!!!')
+
 			if self.counter%self.mem_size != 0 or self.counter<self.mem_size:
 				r.memory[self.counter%(self.mem_size)] = r.response
 				self.threshold_update = 0
 			else:
 				self.threshold_update = 1
-		# 		r.patch.set_color(options[r.assigned_opt-1].color)
-		# plt.pause(0.001)
 		
-
 	def updateThresholds(self,robots,p,vP_):
 		mu = 0
 		sigma = 0
@@ -64,8 +58,6 @@ class DecisionMaking:
 			p.mu_h_2 = mu
 			p.sigma_h_2 = sigma
 			p.packaging(vP_)
-
-
 
 	def compare_with_best(self,options):
 		opts = []

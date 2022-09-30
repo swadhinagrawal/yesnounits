@@ -13,6 +13,8 @@ import Params as params
 import ParamSet as ps
 import os
 from functools import partial
+import copy
+from scipy.special import lambertw
 
 def parallel(func,inputs):
 	batch_size = 100
@@ -27,9 +29,10 @@ def parallel(func,inputs):
 	return output
 
 def looper(p,vP,path,mem_size,t_step):
+
     options = parallel(partial(obj.Object,o_type='O',p=p,mem_size=mem_size),range(p.num_opts))
     robots = parallel(partial(obj.Object,o_type='R',p=p,mem_size=mem_size,options=options),range(p.num_robots))
-    for j in range(3500):
+    for j in range(1000):
         # np.random.shuffle(robots)
         options = parallel(partial(obj.Object,o_type='O',p=p,mem_size=mem_size),range(p.num_opts))
         for r in robots:
@@ -68,45 +71,45 @@ if __name__=="__main__":
     path = os.getcwd() + "/results/"
     plt.close()
     plt.ion()
-    data_columns = ['$\mu_{h_1}$','$\sigma_{h_1}$','$x_{max}$ opt No.','$x_{max}$','$CDM$ opt No.','$CDM$']
-    for i in range(250):
-        data_columns.append(str(i))
-        data_columns.append('Response_'+str(i))
-    data_columns.append('mem_size')
-    data_columns.append('thr_step')
-    vP = ps.variableParams(data_columns,path)
     
-    for n in [5]:
+    data_columns = ['$\mu_{h_1}$','$\sigma_{h_1}$','$x_{max}$ opt No.','$x_{max}$','$CDM$ opt No.','$CDM$']
+    
+    for n in [2,5,8,10]:
+        vP = ps.variableParams(data_columns,path)
         vP.pre = vP.prefix(path)
         fixed_params_column = ['n','$D_{m}$','$\mu_{m_{1}}$','$\mu_{m_{2}}$','$\sigma_{m_{1}}$','$\sigma_{m_{2}}$',\
 			'$D_{x}$','$\mu_{x_{1}}$','$\mu_{x_{2}}$','$\sigma_{x_{1}}$','$\sigma_{x_{2}}$',\
 			'$D_{h}$','$\mu_{h_{1}}$','$\mu_{h_{2}}$','$\sigma_{h_{1}}$','$\sigma_{h_{2}}$','$\delta_{\mu_{h}}$'] 
         fixed_params = [{'n': n, '$D_{m}$':vP.Dm[0],'$\mu_{m_{1}}$':vP.mu_m_1[1],'$\mu_{m_{2}}$':vP.mu_m_2[1],\
-			'$\sigma_{m_{1}}$':vP.sigma_m_1[0],'$\sigma_{m_{2}}$':vP.sigma_m_2[0],'$D_{x}$':vP.Dx[1],\
+			'$\sigma_{m_{1}}$':vP.sigma_m_1[0],'$\sigma_{m_{2}}$':vP.sigma_m_2[0],'$D_{x}$':vP.Dx[0],\
 			'$\mu_{x_{1}}$':vP.mu_x_1[99],'$\mu_{x_{2}}$':vP.mu_x_2[99],'$\sigma_{x_{1}}$':vP.sigma_x_1[9],\
-			'$\sigma_{x_{2}}$':vP.sigma_x_2[9], '$\delta_{\mu_{x}}$':0, '$D_{h}$':None, '$\mu_{h_{1}}$': 20, '$\mu_{h_{2}}$': 20,\
+			'$\sigma_{x_{2}}$':vP.sigma_x_2[9], '$D_{h}$':None, '$\mu_{h_{1}}$': 13, '$\mu_{h_{2}}$': 13,\
 			'$\sigma_{h_{1}}$':0, '$\sigma_{h_{2}}$':0,'$\delta_{\mu_{h}}$':0}]
 
-		# # parallel(partial(looper,copy.copy(P),vP,path))
-        thr_for_mem = [0.3,0.5,0.8,1]
+        thr_for_mem = [0.3]
         memory_length = range(2,22,2)
-        mem_for_thr = [2,10,20,30]
+        mem_for_thr = [10]
         threshold_step = np.arange(0.2,1.2,0.1)
-
+        columns_added = 0
         for th in thr_for_mem:
             for mem_size in memory_length:
-                for times in range(20):
+                for times in range(50):
                     P = paramObjects(fixed_params=fixed_params,vP_=vP)
+                    if columns_added==0:
+                        vP.add_columns(P.num_robots)
+                        columns_added = 1
                     vP.save_params(fixed_params_column,fixed_params,path)
                     vP.save_data(P,path)
                     looper(P,vP,path,mem_size,th)
                     
         for m in mem_for_thr:
             for t_step in threshold_step:
-                for times in range(20):
+                for times in range(50):
                     P = paramObjects(fixed_params=fixed_params,vP_=vP)
+                    if columns_added==0:
+                        vP.add_columns(P.num_robots)
+                        columns_added = 1
                     vP.save_params(fixed_params_column,fixed_params,path)
                     vP.save_data(P,path)
                     looper(P,vP,path,m,t_step)
-
-        
+		# parallel(partial(looper,copy.copy(P),vP,path))

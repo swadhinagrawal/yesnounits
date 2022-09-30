@@ -84,15 +84,12 @@ def dx_u(mu_x,sigma_x,number_of_options,x_type=3):
       Inputs: mu_x (list of peaks), sigma_x (list of variances), number_of_options (number of options in env)
       Outputs: array consisting quality values for each option
       '''
-      
       Dx =  np.zeros(number_of_options)
       peak_choice = np.random.randint(0,len(mu_x),number_of_options)
       # peak_choice = np.array([1 for i in range(int(self.number_of_options/2))])
       # peak_choice = np.append(peak_choice,np.array([0 for i in range(self.number_of_options-len(peak_choice))]))
       for i in range(len(peak_choice)):
-            low = (mu_x[peak_choice[i]] - np.sqrt(3)*sigma_x[peak_choice[i]])   #   Lower bound of PDF
-            high = (mu_x[peak_choice[i]] + np.sqrt(3)*sigma_x[peak_choice[i]])   #   Upper bound of PDF
-            Dx[i] = round(np.random.uniform(low,high),x_type)
+            Dx[i] = round(np.random.uniform(mu_x[peak_choice[i]],sigma_x[peak_choice[i]]),x_type)
       return Dx
 
 def ref_highest_qual(Dx):
