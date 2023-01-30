@@ -39,7 +39,7 @@ class DecisionMaking:
 		
 	def updateThresholds(self,r,p):
 		peak_at = 1 - (1/p.num_opts)
-		# val = 0.2/p.num_opts
+
 		val = 0.21/p.num_opts
 		sd = val - (val**3)/3 + (val**5)/5
 		if r.t_r - peak_at > sd:

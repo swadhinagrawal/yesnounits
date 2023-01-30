@@ -572,7 +572,7 @@ if animations_evol_100:
         plt.show()
 
 # Fig RT distribution
-RT_distribution = 1
+RT_distribution = 0
 if RT_distribution:
     rc('font', weight='bold',size=18)
     rcParams['text.latex.preamble'] = [r'\usepackage{sfmath} \boldmath']
@@ -583,7 +583,7 @@ if RT_distribution:
 
     # data_files = np.sort(np.array([f for f in os.listdir(path) if '.csv' in f and len(f)>10]))
     data_files = []
-    for i in range(16,20):#(95,190):#(110,205)
+    for i in range(73,93):#(95,190):#(110,205)
         # params = pd.read_csv(path+str(i)+'.csv')
         data_files = np.concatenate((data_files,np.array([f for f in np.sort(os.listdir(path)) if '.csv' in f and f[:len(str(i)+'_')] == str(i)+'_' and len(f)>10])),axis=0)
 
@@ -761,13 +761,13 @@ if RT_distribution:
     fig1.savefig(path+d[:-4]+'_mun.pdf',format = "pdf",bbox_inches="tight",pad_inches=0.2)
     plt.show()
 
-success_plot = 0
+success_plot = 1
 if success_plot:
     
     path = os.path.realpath(os.path.dirname(__file__)) + "/results/"
 
     data_files = []
-    for i in range(62,72):
+    for i in range(1,20):
         data_files = np.concatenate((data_files,np.array([f for f in np.sort(os.listdir(path)) if '.csv' in f and f[:len(str(i)+'_')] == str(i)+'_' and len(f)>10])),axis=0)
 
     mean_mu_hs = []
@@ -786,28 +786,35 @@ if success_plot:
                     count += 1
             success_rates.append(count/100)
             num_opts.append(data.iloc[0]['n'])
-            timer.append(row*6000+(i-3)*500/100)
+            timer.append(row*10000+(i-2)*500/100)
 
     
-
-    # data_files = np.array([])
-    # for i in range(66,77):
-    #     params = pd.read_csv(path+str(i)+'.csv')
-    #     data_files = np.concatenate((data_files,np.array([f for f in np.sort(os.listdir(path)) if '.csv' in f and f[:len(str(i)+'_')] == str(i)+'_' and len(f)>10])),axis=0)
-    
-    # mean_mu_hs = []
-    # success_rates_without_update = np.zeros(len(num_opts))
-    # for row in range(len(data_files)):
-    #     data = pd.read_csv(path+data_files[row])
-    #     count = 0
-    #     for i in range(len(data)):
-    #         if data.iloc[i]['$x_{max}$ opt No.'] == data.iloc[i]['$CDM$ opt No.']:
-    #             count += 1
-    #     success_rates_without_update[row] = count/data.shape[0]
     ax1.plot(timer,success_rates,label=r'$N_{t_r}$'+': updated')
-    # ax1.plot(num_opts,success_rates_without_update,label='Mario: not updated')
+    data_files = []
+    for i in range(22,42):
+        data_files = np.concatenate((data_files,np.array([f for f in np.sort(os.listdir(path)) if '.csv' in f and f[:len(str(i)+'_')] == str(i)+'_' and len(f)>10])),axis=0)
+
+    mean_mu_hs = []
+    num_opts = []
+    success_rates = []
+    timer = []
+    for row in range(len(data_files)):
+        data = pd.read_csv(path+data_files[row])
+        
+        for i in range(2,len(data),101):
+            count = 0
+            for j in range(i,i+100):
+                # print(j)
+                if data.iloc[j]['$x_{max}$ opt No.'] == data.iloc[j]['$CDM$ opt No.']:
+                    count += 1
+            success_rates.append(count/100)
+            num_opts.append(data.iloc[0]['n'])
+            timer.append(row*10000+(i-2)*500/100)
+    
+    ax1.plot(timer,success_rates,label=r'$N_{t_r}$'+': not updated')
+    ax1.set_title("Using only 400 Robots")
     ax1.set_xlabel("Decision experience",fontsize = 18)
     ax1.set_ylabel("Success rate",fontsize = 18)
     ax1.legend()
-    fig1.savefig(path+'n_succ_dynamicworl.pdf',format = "pdf",bbox_inches="tight",pad_inches=0.2)
+    fig1.savefig(path+'n_succ_dynamicworld_com.pdf',format = "pdf",bbox_inches="tight",pad_inches=0.2)
     plt.show()

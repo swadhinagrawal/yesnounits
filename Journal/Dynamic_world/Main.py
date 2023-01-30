@@ -62,21 +62,55 @@ def param_change(i,p,robotss):
 
 def looper(p,vP):
     robots = parallel(partial(obj.Object,o_type = 'R', p = p),range(p.num_robots))
-    data = {'$\mu_{h_1}$':np.round(p.mu_h_1,decimals=3),'$\sigma_{h_1}$':np.round(p.sigma_h_1,decimals=3),'$x_{max}$ opt No.':None,'$x_{max}$':None,'$CDM$ opt No.':None,'$CDM$':None}
-    for i in range(len(robots)):
-        data['h_'+str(i)] = np.round(robots[i].threshold,decimals=3)
-        data['tr_'+str(i)] = np.round(robots[i].t_r,decimals=3)
-        data['Response_'+str(i)] = robots[i].response
-        data['rt_step'+str(i)] = robots[i].delta_t_r
-    data['Dq'] = p.Dx
-    data['$\mu_{q_1}$'] = p.mu_x_1
-    data['$\mu_{q_2}$'] = p.mu_x_2
-    data['$\sigma_{q_1}$'] = p.sigma_x_1
-    data['$\sigma_{q_2}$'] = p.sigma_x_2
-    data['n'] = p.num_opts
-    out = pd.DataFrame(data=[data],columns=p.data_columns_name)
-    out.to_csv(p.data_f_path,mode = 'a',header = False, index=False)
+    # data = {'$\mu_{h_1}$':np.round(p.mu_h_1,decimals=3),'$\sigma_{h_1}$':np.round(p.sigma_h_1,decimals=3),'$x_{max}$ opt No.':None,'$x_{max}$':None,'$CDM$ opt No.':None,'$CDM$':None}
+    # for i in range(len(robots)):
+    #     data['h_'+str(i)] = np.round(robots[i].threshold,decimals=3)
+    #     data['tr_'+str(i)] = np.round(robots[i].t_r,decimals=3)
+    #     data['Response_'+str(i)] = robots[i].response
+    #     data['rt_step'+str(i)] = robots[i].delta_t_r
+    # data['Dq'] = p.Dx
+    # data['$\mu_{q_1}$'] = p.mu_x_1
+    # data['$\mu_{q_2}$'] = p.mu_x_2
+    # data['$\sigma_{q_1}$'] = p.sigma_x_1
+    # data['$\sigma_{q_2}$'] = p.sigma_x_2
+    # data['n'] = p.num_opts
+    # out = pd.DataFrame(data=[data],columns=p.data_columns_name)
+    # out.to_csv(p.data_f_path,mode = 'a',header = False, index=False)
+    num_opt = [51, 68, 17, 85,  2, 98, 70, 25,  4, 65, 39, 35, 82, 88, 99, 16, 81,
+       54, 62, 95]
     for run in range(20):
+        # Update world
+        p.Dx = vP.Dx[np.random.randint(3)]
+        p.mu_x_1 = (p.mu_x_2 + p.mu_x_1)/2 + 1 #+ np.random.randint(2)*(-2)
+        if p.Dx == 'G' or p.Dx == 'U':
+            p.mu_x_2 = p.mu_x_1
+        else:
+            p.mu_x_2 = p.mu_x_1 + 5
+        p.sigma_x_1 = 1
+        p.sigma_x_2 = 1
+        p.num_opts = num_opt[run]#np.random.randint(101)
+        p.mu_m_1 = int(p.num_robots/p.num_opts)
+        p.mu_m_2 = int(p.num_robots/p.num_opts)
+        
+        p.packaging(vP)
+        p.data_columns_name = p.data_columns_name[:6]
+        p.add_columns(p.num_robots)
+        p.pre = p.prefix(vP.results_path)
+        open(vP.results_path+str(p.pre),'w+')
+        p.save_data(vP.results_path)
+        time.sleep(5)
+        parallel(partial(param_change,p=p,robotss=robots),range(p.num_robots))
+        data = {'$\mu_{h_1}$':np.round(p.mu_h_1,decimals=3),'$\sigma_{h_1}$':np.round(p.sigma_h_1,decimals=3),'$x_{max}$ opt No.':None,'$x_{max}$':None,'$CDM$ opt No.':None,'$CDM$':None}
+        data['Dq'] = p.Dx
+        data['$\mu_{q_1}$'] = p.mu_x_1
+        data['$\mu_{q_2}$'] = p.mu_x_2
+        data['$\sigma_{q_1}$'] = p.sigma_x_1
+        data['$\sigma_{q_2}$'] = p.sigma_x_2
+        data['n'] = p.num_opts
+
+        out = pd.DataFrame(data=[data],columns=p.data_columns_name)
+        out.to_csv(p.data_f_path,mode = 'a',header = False, index=False)
+
         for t in range(10000):
             parallel(partial(nullifier,robotss=robots,run=run),range(p.num_robots))
             decision,options = deciding_phase(p,robots[:p.num_opts*p.mu_m_1],t)
@@ -101,38 +135,7 @@ def looper(p,vP):
                     out = pd.DataFrame(data=[data],columns=p.data_columns_name)
                     out.to_csv(p.data_f_path,mode = 'a',header = False, index=False)
 
-        # Update world
-        p.Dx = vP.Dx[np.random.randint(3)]
-        p.mu_x_1 = (p.mu_x_2 + p.mu_x_1)/2 + 1 #+ np.random.randint(2)*(-2)
-        if p.Dx == 'G' or p.Dx == 'U':
-            p.mu_x_2 = p.mu_x_1
-        else:
-            p.mu_x_2 = p.mu_x_1 + 5
-        p.sigma_x_1 = 1
-        p.sigma_x_2 = 1
-        p.num_opts = np.random.randint(101)
-        p.mu_m_1 = int(p.num_robots/p.num_opts)
-        p.mu_m_2 = int(p.num_robots/p.num_opts)
         
-        p.packaging(vP)
-        p.data_columns_name = p.data_columns_name[:6]
-        p.add_columns(p.num_robots)
-        p.pre = p.prefix(vP.results_path)
-        open(vP.results_path+str(p.pre),'w+')
-        p.save_data(vP.results_path)
-        time.sleep(5)
-        parallel(partial(param_change,p=p,robotss=robots),range(p.num_robots))
-
-        data['Dq'] = p.Dx
-        data['$\mu_{q_1}$'] = p.mu_x_1
-        data['$\mu_{q_2}$'] = p.mu_x_2
-        data['$\sigma_{q_1}$'] = p.sigma_x_1
-        data['$\sigma_{q_2}$'] = p.sigma_x_2
-        data['n'] = p.num_opts
-
-        out = pd.DataFrame(data=[data],columns=p.data_columns_name)
-        out.to_csv(p.data_f_path,mode = 'a',header = False, index=False)
-
 def paramObjects(fixed_params,vP_,data_columns,path,fixed_params_column):
     p = params.Params(data_columns,path)
     p.initializer(vP_,n = fixed_params[0]['n'], Dm = fixed_params[0]['$D_{m}$'], mum1 = fixed_params[0]['$\mu_{m_{1}}$'],\
@@ -162,7 +165,7 @@ if __name__=="__main__":
     # for delt_tr in np.arange(0.001,0.21,0.01):
     if gaussianM:
         # for n in vP.num_opts:
-        n = 8
+        n = 100
         delt_tr = 1/(n*n)
         fixed_params_column = ['n','$D_{m}$','$\mu_{m_{1}}$','$\mu_{m_{2}}$','$\sigma_{m_{1}}$','$\sigma_{m_{2}}$',\
             '$D_{x}$','$\mu_{x_{1}}$','$\mu_{x_{2}}$','$\sigma_{x_{1}}$','$\sigma_{x_{2}}$',\
