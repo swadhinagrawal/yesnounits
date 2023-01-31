@@ -14,7 +14,7 @@ class Object:
 			self.assigned_count = 0
 
 		if self.o_type == "R":
-			self.threshold = p.mu_h_1#p.h_distribution_fn(m_units=1,mu_h=p.mu_h,sigma_h=p.sigma_h)[0]
+			self.threshold = p.h_distribution_fn(m_units=1,mu_h=p.mu_h,sigma_h=p.sigma_h)[0]#p.mu_h_1#
 			self.assigned_opt = option
 			
 			self.delta_t_r = np.random.uniform(0.0001,0.999)
