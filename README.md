@@ -17,5 +17,5 @@
 * Code Author : **Swadhin Agrawal**
 * Supervisors : **Andreagiovanni Reina, P.B Sujit**
 
-Cite this paper
+#### Cite this paper
 Agrawal, S., Baliyarasimhuni, S.P., Reina, A. (2022). Response Threshold Distributions to Improve Best-of-N Decisions in Minimalistic Robot Swarms. In: , et al. Swarm Intelligence. ANTS 2022. Lecture Notes in Computer Science, vol 13491. Springer, Cham. https://doi.org/10.1007/978-3-031-20176-9_32
